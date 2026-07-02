@@ -1,3 +1,5 @@
+import { setTokenProvider } from '../api/client'
+
 // Token storage: in-memory source of truth, persisted to localStorage in the
 // browser, absent on the server. SSR renders only public pages, so the server
 // never needs (or sees) a token.
@@ -45,3 +47,18 @@ export const tokenStore = {
     }
   },
 }
+
+// Wire this store into the api layer's client as its token source. Importing
+// any auth module (the shell always does, via useAuth) activates bearer
+// injection and the 401-refresh flow.
+setTokenProvider({
+  jwt: () => tokenStore.get()?.jwt,
+  refreshToken: () => tokenStore.get()?.refreshToken,
+  rotated: (jwt, refreshToken) => {
+    const tokens = tokenStore.get()
+    if (tokens !== null) tokenStore.set({ ...tokens, jwt, refreshToken })
+  },
+  invalidated: () => {
+    tokenStore.set(null)
+  },
+})

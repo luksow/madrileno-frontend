@@ -49,6 +49,38 @@ describe('makeClient', () => {
     expect(tokenStore.get()?.refreshToken).toBe(REFRESHED.refreshToken)
   })
 
+  it('deduplicates concurrent 401s into a single refresh (token rotation safety)', async () => {
+    loggedIn()
+    let refreshCalls = 0
+    server.use(
+      http.get(`${BASE}/v1/users/me`, ({ request }) => {
+        if (request.headers.get('authorization') === 'Bearer fresh-jwt') {
+          return HttpResponse.json(USER)
+        }
+        return HttpResponse.json(
+          { type: 'rejection:authentication-failed', status: 401, title: 'Could not authorize' },
+          { status: 401 },
+        )
+      }),
+      http.post(`${BASE}/v1/auth/refresh-token`, async () => {
+        refreshCalls += 1
+        // Delay so the second 401 arrives while the first refresh is in flight.
+        await new Promise((r) => setTimeout(r, 25))
+        return HttpResponse.json(REFRESHED)
+      }),
+    )
+
+    const client = makeClient(v1UsersMeContract, BASE)
+    const [a, b] = await Promise.all([client.get(), client.get()])
+
+    // Without single-flight the second refresh would present the already-used
+    // (rotated) token and kill the session.
+    expect(refreshCalls).toBe(1)
+    expect(a.status).toBe(200)
+    expect(b.status).toBe(200)
+    expect(tokenStore.get()?.jwt).toBe('fresh-jwt')
+  })
+
   it('logs out when the refresh token is rejected', async () => {
     loggedIn()
     server.use(
