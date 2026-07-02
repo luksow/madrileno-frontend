@@ -1,0 +1,70 @@
+#!/usr/bin/env node
+// Frontend counterpart of the backend's scripts/init-project.scala: remove the
+// wine-auction demo and leave a runnable shell (login + placeholder home).
+//
+// What it does:
+//   1. Deletes src/features/auctions/.
+//   2. Strips every block bracketed by `frontend:auction-block-start` /
+//      `frontend:auction-block-end` markers (imports, routes, SSR prefetch).
+//   3. Drops any leftover imports from features/auctions (belt and braces).
+//   4. With an optional <name> argument, renames the package and page title.
+//
+// The vendored contract in src/contracts/ is left alone: after you run the
+// backend's init-project (which deletes the auction module), `sbt test` +
+// `npm run sync-contracts` refresh it to match.
+//
+// Usage: node scripts/init-project.mjs [name]
+import fs from 'node:fs'
+import path from 'node:path'
+
+const name = process.argv[2]
+
+const auctionsDir = path.join('src', 'features', 'auctions')
+const deletedDemo = fs.existsSync(auctionsDir)
+if (deletedDemo) fs.rmSync(auctionsDir, { recursive: true })
+
+// A block is every line from the one containing the start marker through the
+// one containing the end marker, inclusive. Works for `//` and `{/* */}` forms.
+const blockRe = /^.*frontend:auction-block-start[\s\S]*?frontend:auction-block-end.*(?:\n|$)/gm
+const leftoverImportRe = /^import .* from '.*features\/auctions.*'\r?\n/gm
+
+function* walk(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, entry.name)
+    if (entry.isDirectory()) {
+      if (entry.name === 'contracts' || entry.name === 'node_modules') continue
+      yield* walk(p)
+    } else if (/\.(tsx?|css)$/.test(entry.name)) {
+      yield p
+    }
+  }
+}
+
+let stripped = 0
+for (const file of walk('src')) {
+  const original = fs.readFileSync(file, 'utf-8')
+  const transformed = original.replace(blockRe, '').replace(leftoverImportRe, '')
+  if (transformed !== original) {
+    fs.writeFileSync(file, transformed)
+    stripped += 1
+  }
+}
+
+if (name) {
+  const pkgPath = 'package.json'
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+  pkg.name = `${name}-frontend`
+  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
+
+  const htmlPath = 'index.html'
+  const html = fs.readFileSync(htmlPath, 'utf-8')
+  fs.writeFileSync(htmlPath, html.replace(/<title>.*<\/title>/, `<title>${name}</title>`))
+}
+
+console.log(`Deleted demo feature: ${deletedDemo ? auctionsDir : '(already gone)'}`)
+console.log(`Stripped auction blocks from ${stripped} file(s)`)
+if (name) console.log(`Renamed package to ${name}-frontend`)
+console.log()
+console.log('Next:')
+console.log('  npm run typecheck && npm run lint && npm run test   # should all be green')
+console.log('  (after backend init-project + sbt test): npm run sync-contracts')

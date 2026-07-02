@@ -1,9 +1,128 @@
-# React + Vite
+# madrileno-frontend
 
-This template sets up server-side rendering (SSR) with streaming for a React application using Vite.
+The reference frontend for the [madrileno](../madrileno) backend template: a
+React SPA (with SSR as a working opt-in) built against the backend's
+**generated ts-rest contract**, so the Scala routes are the single source of
+truth and drift is a compile error.
 
-Note that this template does not fully support [React Suspense](https://react.dev/reference/react/Suspense). If they are used, the site will only hydrate when suspense if fully resolved on the server-side.
+Stack: Vite + React 19 + TypeScript (strict) + TanStack Query + ts-rest + zod +
+react-router + react-hook-form + Temporal. Tests: Vitest + Testing Library +
+MSW. No component framework — plain CSS; bring your own design system.
 
-Why? Suspense works by sending the initial HTML with placeholders, and then stream additional scripts to replace the placeholders when the resource is ready on the server-side. This delay in the stream interferes with script execution as module scripts in Vite are only executed when the DOM is ready (when the stream ends). To remedy this, suspense requires module scripts to be [async](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script#async) and in the correct HTML order for it to hydrate as soon as possible. This is too complex to implement in a template right now.
+## The contract loop (the whole point)
 
-Check out the [React docs](https://react.dev/learn/creating-a-react-app) for suggested full-stack frameworks that implement this.
+```
+Scala router specs ──sbt test──▶ target/baklava/tsrest/src/*.ts
+                                        │  npm run sync-contracts
+                                        ▼
+                              src/contracts/ (vendored, committed)
+                                        │  typed clients + hooks
+                                        ▼
+                         npm run typecheck  ← fails on contract drift
+```
+
+Rename a field in a backend DTO, run `sbt test` + `npm run sync-contracts`,
+and `npm run typecheck` fails at the exact frontend call site. The contract is
+committed, so CI and fresh clones need no backend checkout.
+
+## Quick start
+
+You need Node 22+ (Node ≥20.19 works) and the backend running
+([backend README](../madrileno)):
+
+```bash
+npm install
+npm run dev          # SPA on http://localhost:5173, /v1 proxied to :9000
+```
+
+The Vite proxy makes API calls same-origin, so the backend needs **no CORS
+config in dev**. Log in on `/login` (any email — the backend's dev auth), then
+browse, bid, and watch the typed error envelope when a bid is too low.
+
+Refreshing the contract after backend changes:
+
+```bash
+(cd ../madrileno && sbt test)   # regenerates target/baklava/tsrest
+npm run sync-contracts
+npm run typecheck               # surfaces any drift as compile errors
+```
+
+## SPA by default, SSR when you want it
+
+`npm run dev` / `npm run build` is a plain SPA — static files, any web server.
+That's the default and the cheapest thing to operate.
+
+The **SSR opt-in** (`server.js` + `src/app/entry-server.tsx`) server-renders
+the _public_ pages — auction list and detail/bids — with TanStack Query
+prefetch + dehydrate, streaming the HTML and hydrating on the client:
+
+```bash
+npm run dev:ssr                       # dev SSR (Vite middleware mode)
+npm run build:ssr && npm run preview:ssr   # production SSR
+curl -s localhost:5173 | grep card    # server-rendered auction HTML
+```
+
+Design notes:
+
+- **Only unauthenticated routes render on the server.** Auth is a JWT in
+  localStorage; the server never sees it, and doesn't need to — logged-in
+  actions (bidding) are client-side interactions anyway. If you need
+  authenticated SSR, switch to cookie-based sessions first.
+- Components are **SSR-safe by construction**: no browser globals during
+  render, data via TanStack Query, tokens behind an environment guard. Keep
+  new code that way (CI builds the SSR bundle so regressions surface) and the
+  SPA→SSR switch stays an afternoon of plumbing, not a rewrite.
+- The SSR server (Express, `/healthz`, `Dockerfile`) is a second deployable.
+  `API_BASE_URL` tells it where the backend is for server-side prefetch.
+
+## Production
+
+- **SPA**: `npm run build`, serve `dist/`. Set `VITE_API_BASE_URL` to the API
+  origin at build time and add that frontend origin to the backend's
+  `CORS_ALLOWED_ORIGINS`.
+- **SSR**: `docker build .` (multi-stage, healthcheck on `/healthz`), run with
+  `PORT`, `API_BASE_URL`, and (if the API is a different origin for browsers)
+  `VITE_API_BASE_URL` baked at build time + backend CORS as above.
+
+## Observability (opt-in)
+
+OpenObserve RUM pairs with the backend's OpenObserve instance: set the
+`VITE_OPENOBSERVE_RUM_*` variables (see `.env.sample`; client token from
+OpenObserve → Ingestion) and sessions, replays, and browser errors land next
+to the backend traces. Unset = the SDK never loads (it's a lazy chunk).
+
+## Conventions
+
+- **Types from the contract**: `ClientInferResponseBody<typeof contract.get, 200>`
+  — never hand-written DTOs.
+- **Errors as values**: expected outcomes (e.g. `bid-too-low`) return typed
+  results; UI dispatches on the stable Problem `type` tag, not display text.
+  Only unexpected failures throw.
+- **Temporal, not Date**: ESLint bans the `Date` global everywhere except
+  `src/api/datetime.ts`, the wire boundary (the generated contract parses
+  timestamps to `Date`; convert immediately).
+- **Feature folders**: `src/features/<name>/` holds api hooks, pages, mocks,
+  tests. The shell (`src/app/`, `src/auth/`, `src/api/`) stays feature-free.
+- **MSW handlers are typed against the contract** — the frontend's echo of the
+  backend's router specs.
+
+## Starting a real project
+
+```bash
+node scripts/init-project.mjs my-project
+```
+
+Deletes the auction demo (`src/features/auctions/` + every
+`frontend:auction-block-*` marker block), leaving a runnable shell: login,
+typed client, routing, tests, SSR opt-in. After running the backend's own
+`init-project.scala`, regenerate + resync the contract.
+
+## Scripts
+
+| Script                                   | What                                  |
+| ---------------------------------------- | ------------------------------------- |
+| `dev` / `build` / `preview`              | SPA (default)                         |
+| `dev:ssr` / `build:ssr` / `preview:ssr`  | SSR opt-in                            |
+| `typecheck` / `lint` / `format` / `test` | the gate (all run in CI)              |
+| `sync-contracts`                         | vendor the backend-generated contract |
+| `init-project`                           | strip the demo for a fresh project    |
