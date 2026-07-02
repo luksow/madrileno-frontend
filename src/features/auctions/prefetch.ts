@@ -1,22 +1,24 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { matchPath } from 'react-router-dom'
-import { auctionKeys, fetchAuction, fetchAuctionsPage, fetchBidsPage } from './api'
+import { makeTsr } from '../../api/tsr'
+import { auctionKeys, BIDS_PAGE_SIZE, PAGE_SIZE } from './api'
 
-// SSR prefetch for the public pages only: the list at '/' and detail+bids at
+// SSR prefetch for the PUBLIC pages only: the list at '/' and detail+bids at
 // '/auctions/:id'. These routes are unauthenticated on the backend, so the
-// server needs no token. prefetchQuery swallows failures — if the backend is
-// down the page still streams with a client-side error state.
+// server needs no token. prefetch* swallows failures — if the backend is down
+// the page still streams with a client-side error state.
 export async function prefetchAuctionsForUrl(
   queryClient: QueryClient,
   url: string,
   apiBaseUrl: string,
 ): Promise<void> {
   const pathname = url.split('?')[0] ?? url
+  const tsrQueryClient = makeTsr(apiBaseUrl).initQueryClient(queryClient)
 
   if (matchPath('/', pathname) !== null) {
-    await queryClient.prefetchQuery({
+    await tsrQueryClient['v1-auctions'].get.prefetchQuery({
       queryKey: auctionKeys.list(0),
-      queryFn: () => fetchAuctionsPage(0, apiBaseUrl),
+      queryData: { query: { limit: PAGE_SIZE, offset: 0 } },
     })
     return
   }
@@ -25,13 +27,16 @@ export async function prefetchAuctionsForUrl(
   const auctionId = match?.params.auctionId
   if (auctionId !== undefined) {
     await Promise.all([
-      queryClient.prefetchQuery({
+      tsrQueryClient['v1-auctions---auctionId'].get.prefetchQuery({
         queryKey: auctionKeys.detail(auctionId),
-        queryFn: () => fetchAuction(auctionId, apiBaseUrl),
+        queryData: { params: { auctionId } },
       }),
-      queryClient.prefetchInfiniteQuery({
+      tsrQueryClient['v1-auctions---auctionId-bids'].get.prefetchInfiniteQuery({
         queryKey: auctionKeys.bids(auctionId),
-        queryFn: () => fetchBidsPage(auctionId, undefined, apiBaseUrl),
+        queryData: {
+          params: { auctionId },
+          query: { limit: BIDS_PAGE_SIZE, 'after-id': undefined },
+        },
         initialPageParam: undefined as string | undefined,
       }),
     ])

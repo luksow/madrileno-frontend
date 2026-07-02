@@ -30,21 +30,22 @@ function AuctionCard({ auction }: { auction: AuctionSummary }) {
 
 export function AuctionsPage() {
   const [offset, setOffset] = useState(0)
-  const { data, isPending, isError, error } = useAuctionsPage(offset)
+  const { data, isPending, isError } = useAuctionsPage(offset)
+  const page = data?.body
 
   return (
     <section>
       <title>Auctions — madrileno</title>
       <h1>Wine auctions</h1>
       {isPending && <p className="muted">Loading auctions…</p>}
-      {isError && <p className="error">Couldn’t load auctions: {error.message}</p>}
-      {data && (
+      {isError && <p className="error">Couldn’t load auctions — is the backend up?</p>}
+      {page && (
         <>
-          {data.items.length === 0 ? (
+          {page.items.length === 0 ? (
             <p className="muted">No auctions yet. Log in and create one via the API.</p>
           ) : (
             <ul className="card-grid">
-              {data.items.map((auction) => (
+              {page.items.map((auction) => (
                 <AuctionCard key={auction.id} auction={auction} />
               ))}
             </ul>
@@ -57,11 +58,11 @@ export function AuctionsPage() {
               ← Previous
             </button>
             <span className="muted">
-              {String(offset + 1)}–{String(Math.min(offset + PAGE_SIZE, data.total))} of{' '}
-              {String(data.total)}
+              {String(offset + 1)}–{String(Math.min(offset + PAGE_SIZE, page.total))} of{' '}
+              {String(page.total)}
             </span>
             <button
-              disabled={offset + PAGE_SIZE >= data.total}
+              disabled={offset + PAGE_SIZE >= page.total}
               onClick={() => setOffset(offset + PAGE_SIZE)}
             >
               Next →

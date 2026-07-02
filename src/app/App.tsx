@@ -1,3 +1,4 @@
+import { tsr } from '../api/tsr'
 import { ErrorBoundary } from './ErrorBoundary'
 import { Layout } from './Layout'
 import { AppRoutes } from './router'
@@ -5,9 +6,11 @@ import { AppRoutes } from './router'
 export function App() {
   return (
     <ErrorBoundary>
-      <Layout>
-        <AppRoutes />
-      </Layout>
+      <tsr.ReactQueryProvider>
+        <Layout>
+          <AppRoutes />
+        </Layout>
+      </tsr.ReactQueryProvider>
     </ErrorBoundary>
   )
 }

@@ -1,12 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useParams } from 'react-router-dom'
 import { z } from 'zod'
 import { formatInstant } from '../../../api/datetime'
 import { problemTag, type Problem } from '../../../api/problem'
 import { useAuth } from '../../../auth/useAuth'
-import { useAuction, useBids, usePlaceBid, type Auction } from '../api'
+import { bidRejection, useAuction, useBids, usePlaceBid, type Auction } from '../api'
 
 function price(amount: number, currency: string): string {
   return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount)
@@ -38,12 +37,11 @@ function rejectionMessage(problem: Problem): string {
 function PlaceBidForm({ auction }: { auction: Auction }) {
   const { tokens } = useAuth()
   const placeBid = usePlaceBid(auction.id)
-  const [rejection, setRejection] = useState<Problem | null>(null)
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<BidForm>({ resolver: zodResolver(bidSchema) })
 
   if (tokens === null) {
@@ -54,12 +52,16 @@ function PlaceBidForm({ auction }: { auction: Auction }) {
     )
   }
 
-  const onSubmit = handleSubmit(async ({ amount }) => {
-    setRejection(null)
-    const outcome = await placeBid.mutateAsync(amount)
-    if (outcome.kind === 'placed') reset()
-    else setRejection(outcome.problem)
+  const onSubmit = handleSubmit(({ amount }) => {
+    placeBid.mutate(
+      { params: { auctionId: auction.id }, body: { amount } },
+      { onSuccess: () => reset() },
+    )
   })
+
+  // Expected rejections (bid too low, not open, …) arrive as typed mutation
+  // errors carrying the Problem envelope; anything else is surfaced generically.
+  const rejection = placeBid.error !== null ? bidRejection(placeBid.error) : null
 
   return (
     <form onSubmit={(e) => void onSubmit(e)} className="bid-form" noValidate>
@@ -72,15 +74,15 @@ function PlaceBidForm({ auction }: { auction: Auction }) {
         placeholder={String(auction.currentPrice)}
         {...register('amount')}
       />
-      <button type="submit" disabled={isSubmitting || auction.status !== 'Open'}>
-        {isSubmitting ? 'Placing…' : 'Place bid'}
+      <button type="submit" disabled={placeBid.isPending || auction.status !== 'Open'}>
+        {placeBid.isPending ? 'Placing…' : 'Place bid'}
       </button>
       {errors.amount && <p className="error">{errors.amount.message}</p>}
       {rejection !== null && <p className="error">{rejectionMessage(rejection)}</p>}
-      {placeBid.isError && <p className="error">{placeBid.error.message}</p>}
-      {placeBid.data?.kind === 'placed' && rejection === null && (
-        <p className="success">Bid placed.</p>
+      {placeBid.isError && rejection === null && (
+        <p className="error">Couldn’t place the bid — try again.</p>
       )}
+      {placeBid.isSuccess && <p className="success">Bid placed.</p>}
     </form>
   )
 }
@@ -90,7 +92,7 @@ function BidHistory({ auctionId }: { auctionId: string }) {
     useBids(auctionId)
   if (isPending) return <p className="muted">Loading bids…</p>
   if (isError) return <p className="error">Couldn’t load the bid history.</p>
-  const bids = data.pages.flatMap((page) => page.items)
+  const bids = data.pages.flatMap((page) => page.body.items)
   return (
     <>
       {bids.length === 0 ? (
@@ -119,12 +121,13 @@ function BidHistory({ auctionId }: { auctionId: string }) {
 
 export function AuctionDetailPage() {
   const { auctionId } = useParams()
-  const { data: auction, isPending, isError, error } = useAuction(auctionId ?? '')
+  const { data, isPending, isError } = useAuction(auctionId ?? '')
 
   if (auctionId === undefined) return <p className="error">Missing auction id.</p>
   if (isPending) return <p className="muted">Loading auction…</p>
-  if (isError) return <p className="error">Couldn’t load the auction: {error.message}</p>
+  if (isError) return <p className="error">Couldn’t load this auction — does it exist?</p>
 
+  const auction = data.body
   return (
     <section>
       <title>{`${auction.wineName} — madrileno`}</title>
