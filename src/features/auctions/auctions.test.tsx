@@ -21,7 +21,7 @@ function renderApp(path: string) {
 }
 
 describe('auctions list', () => {
-  it("renders the list on '/' (the demo route wins the tie against Home)", async () => {
+  it("renders the list on '/'", async () => {
     server.use(listHandler)
     renderApp('/')
     expect(await screen.findByText(/Château Margaux 2015/)).toBeInTheDocument()

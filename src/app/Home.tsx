@@ -1,6 +1,6 @@
-// The post-init landing page. While the auction demo is present this route is
-// shadowed by the demo's '/' route; after scripts/init-project.mjs it becomes
-// the home page of the fresh shell.
+// The post-init landing page. Not routed while the auction demo is present —
+// scripts/init-project.mjs wires it to '/' (at the router's home-anchor) when
+// it strips the demo.
 export function Home() {
   return (
     <section>

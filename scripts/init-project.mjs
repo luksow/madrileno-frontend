@@ -50,6 +50,22 @@ for (const file of walk('src')) {
   }
 }
 
+// Wire Home to '/' at the router's anchor. The demo owned '/' until now; the
+// anchor keeps the route table free of duplicate paths in both states.
+const routerPath = path.join('src', 'app', 'router.tsx')
+const router = fs.readFileSync(routerPath, 'utf-8')
+const anchorRe = /^.*frontend:home-anchor.*(?:\n|$)/m
+if (anchorRe.test(router)) {
+  fs.writeFileSync(
+    routerPath,
+    router
+      .replace(anchorRe, "  { path: '/', element: <Home /> },\n")
+      .replace(/^import { NotFound } from '\.\/NotFound'$/m, (line) =>
+        [line, "import { Home } from './Home'"].join('\n'),
+      ),
+  )
+}
+
 if (name) {
   const pkgPath = 'package.json'
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
