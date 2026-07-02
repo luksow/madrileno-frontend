@@ -24,9 +24,11 @@ madrileno backend template (sibling repo `../madrileno`).
   query client. `src/features/<name>/` — one folder per feature (api hooks,
   pages, mocks, tests). `src/api/` — ts-rest client with bearer + 401-refresh,
   Problem envelope, datetime boundary.
-- New API calls: build a client with `makeClient(<contract>)`, infer types via
-  `ClientInferResponseBody`, wrap in TanStack Query hooks. Share query keys
-  between hooks and SSR prefetch.
+- New API calls: use the canonical react-query client `tsr` from `src/api/tsr.ts`
+  (`tsr['<generated-key>'].get.useQuery({ queryKey, queryData })`); plain
+  one-shot calls use `makeClient(<contract>)`. Infer types via
+  `ClientInferResponseBody`. Share query keys between hooks and SSR prefetch
+  (register prefetchers in `src/app/ssrPrefetch.ts`).
 - Tests: Vitest + Testing Library + MSW. Register handlers per test with
   `server.use(...)`; type fixtures against contract-inferred types.
 - Blocks bracketed by `// frontend:auction-block-start` / `-end` are demo

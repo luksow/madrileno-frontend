@@ -5,9 +5,15 @@ React SPA (with SSR as a working opt-in) built against the backend's
 **generated ts-rest contract**, so the Scala routes are the single source of
 truth and drift is a compile error.
 
-Stack: Vite + React 19 + TypeScript (strict) + TanStack Query + ts-rest + zod +
-react-router + react-hook-form + Temporal. Tests: Vitest + Testing Library +
-MSW. No component framework — plain CSS; bring your own design system.
+Stack: Vite + React 19 + TypeScript (strict) + TanStack Query + ts-rest
+(`@ts-rest/react-query/v5`) + zod + react-router + react-hook-form + Temporal.
+Tests: Vitest + Testing Library + MSW, plus a Playwright e2e smoke. No
+component framework — plain CSS; bring your own design system.
+
+> `@ts-rest/react-query` still declares a React ≤18 peer range; it only wraps
+> TanStack Query v5 (which supports React 19), so `package.json` carries an
+> `overrides` entry pinning its `react` peer to ours. Drop it once upstream
+> updates the range.
 
 ## The contract loop (the whole point)
 
@@ -95,9 +101,9 @@ to the backend traces. Unset = the SDK never loads (it's a lazy chunk).
 
 - **Types from the contract**: `ClientInferResponseBody<typeof contract.get, 200>`
   — never hand-written DTOs.
-- **Errors as values**: expected outcomes (e.g. `bid-too-low`) return typed
-  results; UI dispatches on the stable Problem `type` tag, not display text.
-  Only unexpected failures throw.
+- **Errors stay typed and expected**: contract-declared rejections (e.g.
+  `bid-too-low`) surface as typed mutation errors carrying the Problem
+  envelope; UI dispatches on the stable `type` tag, not display text.
 - **Temporal, not Date**: ESLint bans the `Date` global everywhere except
   `src/api/datetime.ts`, the wire boundary (the generated contract parses
   timestamps to `Date`; convert immediately).
@@ -119,10 +125,11 @@ typed client, routing, tests, SSR opt-in. After running the backend's own
 
 ## Scripts
 
-| Script                                   | What                                  |
-| ---------------------------------------- | ------------------------------------- |
-| `dev` / `build` / `preview`              | SPA (default)                         |
-| `dev:ssr` / `build:ssr` / `preview:ssr`  | SSR opt-in                            |
-| `typecheck` / `lint` / `format` / `test` | the gate (all run in CI)              |
-| `sync-contracts`                         | vendor the backend-generated contract |
-| `init-project`                           | strip the demo for a fresh project    |
+| Script                                   | What                                                                   |
+| ---------------------------------------- | ---------------------------------------------------------------------- |
+| `dev` / `build` / `preview`              | SPA (default)                                                          |
+| `dev:ssr` / `build:ssr` / `preview:ssr`  | SSR opt-in                                                             |
+| `typecheck` / `lint` / `format` / `test` | the gate (all run in CI)                                               |
+| `e2e`                                    | Playwright smoke vs the SSR server (needs the live backend; not in CI) |
+| `sync-contracts`                         | vendor the backend-generated contract                                  |
+| `init-project`                           | strip the demo for a fresh project                                     |
