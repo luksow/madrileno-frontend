@@ -5,13 +5,13 @@ import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { makeClient } from '../api/client'
 import { asProblem, type Problem } from '../api/problem'
-import { devAuthContract } from './devAuth.contract'
+import { v1AuthDevContract } from '../contracts/v1-auth-dev.contract'
 import { tokenStore } from './tokenStore'
 
 const loginSchema = z.object({ email: z.string().email('Enter a valid email address') })
 type LoginForm = z.infer<typeof loginSchema>
 
-const devAuth = makeClient(devAuthContract)
+const devAuth = makeClient(v1AuthDevContract)
 
 export function LoginPage() {
   const navigate = useNavigate()

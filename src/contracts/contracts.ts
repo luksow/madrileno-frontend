@@ -20,6 +20,7 @@ import { v1AuctionsAuctionIdImagesImageIdContentContract } from "./v1-auctions--
 import { v1AuctionsAuctionIdImagesOrderContract } from "./v1-auctions---auctionId-images-order.contract";
 import { v1AuctionsAuctionIdStreamContract } from "./v1-auctions---auctionId-stream.contract";
 import { v1AuctionsStreamContract } from "./v1-auctions-stream.contract";
+import { v1AuthDevContract } from "./v1-auth-dev.contract";
 import { v1AuthFirebaseContract } from "./v1-auth-firebase.contract";
 import { v1AuthOidcProviderContract } from "./v1-auth-oidc---provider.contract";
 import { v1AuthRefreshTokenContract } from "./v1-auth-refresh-token.contract";
@@ -52,6 +53,7 @@ export const contracts: {
   "v1-auctions---auctionId-images-order": typeof v1AuctionsAuctionIdImagesOrderContract;
   "v1-auctions---auctionId-stream": typeof v1AuctionsAuctionIdStreamContract;
   "v1-auctions-stream": typeof v1AuctionsStreamContract;
+  "v1-auth-dev": typeof v1AuthDevContract;
   "v1-auth-firebase": typeof v1AuthFirebaseContract;
   "v1-auth-oidc---provider": typeof v1AuthOidcProviderContract;
   "v1-auth-refresh-token": typeof v1AuthRefreshTokenContract;
@@ -83,6 +85,7 @@ export const contracts: {
   "v1-auctions---auctionId-images-order": v1AuctionsAuctionIdImagesOrderContract,
   "v1-auctions---auctionId-stream": v1AuctionsAuctionIdStreamContract,
   "v1-auctions-stream": v1AuctionsStreamContract,
+  "v1-auth-dev": v1AuthDevContract,
   "v1-auth-firebase": v1AuthFirebaseContract,
   "v1-auth-oidc---provider": v1AuthOidcProviderContract,
   "v1-auth-refresh-token": v1AuthRefreshTokenContract,
