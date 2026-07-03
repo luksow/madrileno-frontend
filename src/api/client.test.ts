@@ -1,9 +1,13 @@
 import { http, HttpResponse } from 'msw'
-import { describe, expect, it } from 'vitest'
-import { tokenStore } from '../auth/tokenStore'
+import { beforeAll, describe, expect, it } from 'vitest'
+import { registerAuthTokenProvider, tokenStore } from '../auth/tokenStore'
 import { v1UsersMeContract } from '../contracts/v1-users-me.contract'
 import { server } from '../testing/mswServer'
 import { makeClient } from './client'
+
+beforeAll(() => {
+  registerAuthTokenProvider()
+})
 
 const BASE = 'http://api.test'
 const USER = { id: '019ed9bb-0000-7000-8000-000000000042', emailVerified: true }

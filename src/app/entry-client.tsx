@@ -2,10 +2,14 @@ import { HydrationBoundary, QueryClientProvider, type DehydratedState } from '@t
 import { StrictMode } from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import { registerAuthTokenProvider } from '../auth/tokenStore'
 import { initRum } from '../observability/rum'
 import '../styles/index.css'
 import { App } from './App'
 import { makeQueryClient } from './queryClient'
+
+// Wire auth into the api client before anything renders (and can fetch).
+registerAuthTokenProvider()
 
 declare global {
   interface Window {

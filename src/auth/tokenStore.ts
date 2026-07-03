@@ -48,17 +48,20 @@ export const tokenStore = {
   },
 }
 
-// Wire this store into the api layer's client as its token source. Importing
-// any auth module (the shell always does, via useAuth) activates bearer
-// injection and the 401-refresh flow.
-setTokenProvider({
-  jwt: () => tokenStore.get()?.jwt,
-  refreshToken: () => tokenStore.get()?.refreshToken,
-  rotated: (jwt, refreshToken) => {
-    const tokens = tokenStore.get()
-    if (tokens !== null) tokenStore.set({ ...tokens, jwt, refreshToken })
-  },
-  invalidated: () => {
-    tokenStore.set(null)
-  },
-})
+// Wire this store into the api layer's client as its token source, activating
+// bearer injection and the 401-refresh flow. Called explicitly from the client
+// entry (and test setups) — deliberately not a module side effect, so the
+// wiring is visible where the app boots.
+export function registerAuthTokenProvider(): void {
+  setTokenProvider({
+    jwt: () => tokenStore.get()?.jwt,
+    refreshToken: () => tokenStore.get()?.refreshToken,
+    rotated: (jwt, refreshToken) => {
+      const tokens = tokenStore.get()
+      if (tokens !== null) tokenStore.set({ ...tokens, jwt, refreshToken })
+    },
+    invalidated: () => {
+      tokenStore.set(null)
+    },
+  })
+}
