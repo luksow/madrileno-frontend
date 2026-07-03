@@ -22,3 +22,21 @@ jobs:
       - run: npm run test
       - run: npm run build
       - run: npm run build:ssr
+
+  # The post-init shell must stay green: run init-project on the workspace
+  # (throwaway in CI) and put the slimmed tree through the same gate.
+  init-project-shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/init-project.mjs ci-shell
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build
+      - run: npm run build:ssr
