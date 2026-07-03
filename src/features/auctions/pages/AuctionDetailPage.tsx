@@ -92,7 +92,7 @@ function BidHistory({ auctionId }: { auctionId: string }) {
     useBids(auctionId)
   if (isPending) return <p className="muted">Loading bids…</p>
   if (isError) return <p className="error">Couldn’t load the bid history.</p>
-  const bids = data.pages.flatMap((page) => page.body.items)
+  const bids = data.pages.flatMap((page) => page.items)
   return (
     <>
       {bids.length === 0 ? (

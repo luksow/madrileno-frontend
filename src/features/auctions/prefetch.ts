@@ -1,7 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { matchPath } from 'react-router-dom'
-import { makeTsr } from '../../api/tsr'
-import { auctionKeys, BIDS_PAGE_SIZE, PAGE_SIZE } from './api'
+import { makeOrpcUtils } from '../../api/orpc'
+import { BIDS_PAGE_SIZE, PAGE_SIZE } from './api'
 
 // SSR prefetch for the PUBLIC pages only: the list at '/' and detail+bids at
 // '/auctions/:id'. These routes are unauthenticated on the backend, so the
@@ -13,13 +13,14 @@ export async function prefetchAuctionsForUrl(
   apiBaseUrl: string,
 ): Promise<void> {
   const pathname = url.split('?')[0] ?? url
-  const tsrQueryClient = makeTsr(apiBaseUrl).initQueryClient(queryClient)
+  const utils = makeOrpcUtils(apiBaseUrl)
 
   if (matchPath('/', pathname) !== null) {
-    await tsrQueryClient['v1-auctions'].get.prefetchQuery({
-      queryKey: auctionKeys.list(0),
-      queryData: { query: { limit: PAGE_SIZE, offset: 0 } },
-    })
+    await queryClient.prefetchQuery(
+      utils['v1-auctions'].get.queryOptions({
+        input: { query: { limit: PAGE_SIZE, offset: 0 } },
+      }),
+    )
     return
   }
 
@@ -27,18 +28,19 @@ export async function prefetchAuctionsForUrl(
   const auctionId = match?.params.auctionId
   if (auctionId !== undefined) {
     await Promise.all([
-      tsrQueryClient['v1-auctions---auctionId'].get.prefetchQuery({
-        queryKey: auctionKeys.detail(auctionId),
-        queryData: { params: { auctionId } },
-      }),
-      tsrQueryClient['v1-auctions---auctionId-bids'].get.prefetchInfiniteQuery({
-        queryKey: auctionKeys.bids(auctionId),
-        queryData: {
-          params: { auctionId },
-          query: { limit: BIDS_PAGE_SIZE, 'after-id': undefined },
-        },
-        initialPageParam: undefined as string | undefined,
-      }),
+      queryClient.prefetchQuery(
+        utils['v1-auctions---auctionId'].get.queryOptions({ input: { params: { auctionId } } }),
+      ),
+      queryClient.prefetchInfiniteQuery(
+        utils['v1-auctions---auctionId-bids'].get.infiniteOptions({
+          input: (pageParam: string | undefined) => ({
+            params: { auctionId },
+            query: { limit: BIDS_PAGE_SIZE, 'after-id': pageParam },
+          }),
+          initialPageParam: undefined as string | undefined,
+          getNextPageParam: (last) => (last.hasMore ? last.items.at(-1)?.id : undefined),
+        }),
+      ),
     ])
   }
 }

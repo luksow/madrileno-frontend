@@ -2,23 +2,19 @@
 
 The reference frontend for the [madrileno](../madrileno) backend template: a
 React SPA (with SSR as a working opt-in) built against the backend's
-**generated ts-rest contract**, so the Scala routes are the single source of
-truth and drift is a compile error.
+**generated oRPC contract** (baklava's `orpc` output), so the Scala routes are
+the single source of truth and drift is a compile error.
 
-Stack: Vite + React 19 + TypeScript (strict) + TanStack Query + ts-rest
-(`@ts-rest/react-query/v5`) + zod + react-router + react-hook-form + Temporal.
+Stack: Vite + React 19 + TypeScript (strict) + TanStack Query + oRPC
+(`@orpc/openapi-client` + `@orpc/tanstack-query`) + zod + react-router +
+react-hook-form + Temporal.
 Tests: Vitest + Testing Library + MSW, plus a Playwright e2e smoke. No
 component framework — plain CSS; bring your own design system.
-
-> `@ts-rest/react-query` still declares a React ≤18 peer range; it only wraps
-> TanStack Query v5 (which supports React 19), so `package.json` carries an
-> `overrides` entry pinning its `react` peer to ours. Drop it once upstream
-> updates the range.
 
 ## The contract loop (the whole point)
 
 ```
-Scala router specs ──sbt test──▶ target/baklava/tsrest/src/*.ts
+Scala router specs ──sbt test──▶ target/baklava/orpc/src/*.ts
                                         │  npm run sync-contracts
                                         ▼
                               src/contracts/ (vendored, committed)
@@ -48,7 +44,7 @@ browse, bid, and watch the typed error envelope when a bid is too low.
 Refreshing the contract after backend changes:
 
 ```bash
-(cd ../madrileno && sbt test)   # regenerates target/baklava/tsrest
+(cd ../madrileno && sbt test)   # regenerates target/baklava/orpc
 npm run sync-contracts
 npm run typecheck               # surfaces any drift as compile errors
 ```
@@ -99,14 +95,17 @@ to the backend traces. Unset = the SDK never loads (it's a lazy chunk).
 
 ## Conventions
 
-- **Types from the contract**: `ClientInferResponseBody<typeof contract.get, 200>`
-  — never hand-written DTOs.
-- **Errors stay typed and expected**: contract-declared rejections (e.g.
-  `bid-too-low`) surface as typed mutation errors carrying the Problem
-  envelope; UI dispatches on the stable `type` tag, not display text.
+- **Types from the contract**: `Awaited<ReturnType<ApiClient['<key>']['get']>>`
+  — never hand-written DTOs. `JsonifiedClient` keeps them wire-true
+  (timestamps are ISO strings, matching what actually crosses HTTP).
+- **Errors stay typed and expected**: the backend's RFC 9457 Problem responses
+  are decoded by `OpenAPILink`'s `customErrorResponseBodyDecoder` into
+  `ORPCError`s (code = the stable Problem `type` tag, data = the envelope);
+  UI dispatches on the tag, not display text. Per-status response shapes live
+  in the generated `<name>Errors` maps in `src/contracts/`.
 - **Temporal, not Date**: ESLint bans the `Date` global everywhere except
-  `src/api/datetime.ts`, the wire boundary (the generated contract parses
-  timestamps to `Date`; convert immediately).
+  `src/api/datetime.ts`, the wire boundary that converts ISO strings to
+  `Temporal`.
 - **Feature folders**: `src/features/<name>/` holds api hooks, pages, mocks,
   tests. The shell (`src/app/`, `src/auth/`, `src/api/`) stays feature-free.
 - **MSW handlers are typed against the contract** — the frontend's echo of the

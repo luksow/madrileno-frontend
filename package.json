@@ -24,9 +24,11 @@
     "@hookform/resolvers": "^5.4.0",
     "@openobserve/browser-logs": "^0.3.4",
     "@openobserve/browser-rum": "^0.3.4",
+    "@orpc/client": "^1.14.6",
+    "@orpc/contract": "^1.14.6",
+    "@orpc/openapi-client": "^1.14.6",
+    "@orpc/tanstack-query": "^1.14.6",
     "@tanstack/react-query": "^5.101.2",
-    "@ts-rest/core": "^3.52.1",
-    "@ts-rest/react-query": "^3.52.1",
     "compression": "^1.8.1",
     "express": "^5.2.1",
     "react": "^19.2.4",
@@ -36,11 +38,6 @@
     "sirv": "^3.0.2",
     "temporal-polyfill": "^1.0.1",
     "zod": "^3.25.76"
-  },
-  "overrides": {
-    "@ts-rest/react-query": {
-      "react": "$react"
-    }
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",

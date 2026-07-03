@@ -17,7 +17,7 @@ import path from 'node:path'
 const source =
   process.argv[2] ??
   process.env.CONTRACTS_SRC ??
-  path.join('..', 'madrileno', 'target', 'baklava', 'tsrest', 'src')
+  path.join('..', 'madrileno', 'target', 'baklava', 'orpc', 'src')
 const dest = path.join('src', 'contracts')
 
 if (!fs.existsSync(path.join(source, 'contracts.ts'))) {

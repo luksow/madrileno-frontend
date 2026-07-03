@@ -1,16 +1,21 @@
 import { z } from "zod";
-import { initContract } from "@ts-rest/core";
+import { oc } from "@orpc/contract";
 
-export const adminFeatureFlagsKeyAuditContract = initContract().router({
-  get: {
-    summary: 'List a flag\'s audit entries',
-    description: 'Audit trail for a flag (paginated, newest first by default). Entries survive flag deletion.',
-    method: 'GET',
-    path: '/admin/feature-flags/:key/audit',
-    pathParams: z.object({key: z.string()}),
-    query: z.object({"sort-by": z.enum(["CreatedAt"]).nullish(), "sort-dir": z.enum(["Asc","Desc"]).nullish(), limit: z.number().int().nullish(), offset: z.number().int().nullish()}),
-    responses: {
-      200: z.object({
+export const adminFeatureFlagsKeyAuditContract = {
+  get: oc
+    .route({
+      method: 'GET',
+      path: '/admin/feature-flags/{key}/audit',
+      summary: 'List a flag\'s audit entries',
+      description: 'Audit trail for a flag (paginated, newest first by default). Entries survive flag deletion.',
+      successStatus: 200,
+      inputStructure: 'detailed'
+    })
+    .input(z.object({
+      params: z.object({key: z.string()}),
+      query: z.object({"sort-by": z.enum(["CreatedAt"]).nullish(), "sort-dir": z.enum(["Asc","Desc"]).nullish(), limit: z.number().int().nullish(), offset: z.number().int().nullish()}).optional()
+    }))
+    .output(z.object({
         "items": z.array(z.object({
         "action": z.enum(["Created","Deleted","Toggled","Updated"]),
         "actor": z.string(),
@@ -52,7 +57,5 @@ export const adminFeatureFlagsKeyAuditContract = initContract().router({
         "id": z.string().uuid()})),
         "limit": z.number().int(),
         "offset": z.number().int(),
-        "total": z.number().int()})
-    }
-  }
-});
+        "total": z.number().int()}))
+};
