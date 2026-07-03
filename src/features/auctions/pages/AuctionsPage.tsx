@@ -30,8 +30,7 @@ function AuctionCard({ auction }: { auction: AuctionSummary }) {
 
 export function AuctionsPage() {
   const [offset, setOffset] = useState(0)
-  const { data, isPending, isError } = useAuctionsPage(offset)
-  const page = data?.body
+  const { data: page, isPending, isError } = useAuctionsPage(offset)
 
   return (
     <section>

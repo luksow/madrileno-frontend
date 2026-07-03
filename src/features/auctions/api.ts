@@ -25,23 +25,33 @@ export const auctionKeys = {
   bids: (auctionId: string) => ['auctions', 'bids', auctionId] as const,
 }
 
+// The generated dash-keys, aliased once — call sites below read naturally.
+const auctionsRoute = tsr['v1-auctions']
+const auctionRoute = tsr['v1-auctions---auctionId']
+const bidsRoute = tsr['v1-auctions---auctionId-bids']
+
+// `select` unwraps the {status, body, headers} envelope at the hook, so
+// components receive the contract body directly. The cache still stores the
+// full response (select is a view), which keeps SSR dehydration untouched.
 export function useAuctionsPage(offset: number) {
-  return tsr['v1-auctions'].get.useQuery({
+  return auctionsRoute.get.useQuery({
     queryKey: auctionKeys.list(offset),
     queryData: { query: { limit: PAGE_SIZE, offset } },
     placeholderData: keepPreviousData,
+    select: (res) => res.body,
   })
 }
 
 export function useAuction(auctionId: string) {
-  return tsr['v1-auctions---auctionId'].get.useQuery({
+  return auctionRoute.get.useQuery({
     queryKey: auctionKeys.detail(auctionId),
     queryData: { params: { auctionId } },
+    select: (res) => res.body,
   })
 }
 
 export function useBids(auctionId: string) {
-  return tsr['v1-auctions---auctionId-bids'].get.useInfiniteQuery({
+  return bidsRoute.get.useInfiniteQuery({
     queryKey: auctionKeys.bids(auctionId),
     // The adapter types pageParam as unknown (it can't see initialPageParam);
     // it is the `after-id` cursor we return from getNextPageParam below.
@@ -52,12 +62,14 @@ export function useBids(auctionId: string) {
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last: { body: BidsPage }) =>
       last.body.hasMore ? last.body.items.at(-1)?.id : undefined,
+    // No `select` here: unlike useQuery, the adapter's useInfiniteQuery typing
+    // doesn't thread the select generic — consumers unwrap page.body themselves.
   })
 }
 
 export function usePlaceBid(auctionId: string) {
   const queryClient = tsr.useQueryClient()
-  return tsr['v1-auctions---auctionId-bids'].post.useMutation({
+  return bidsRoute.post.useMutation({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: auctionKeys.detail(auctionId) })
       void queryClient.invalidateQueries({ queryKey: auctionKeys.bids(auctionId) })

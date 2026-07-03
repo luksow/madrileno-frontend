@@ -121,13 +121,12 @@ function BidHistory({ auctionId }: { auctionId: string }) {
 
 export function AuctionDetailPage() {
   const { auctionId } = useParams()
-  const { data, isPending, isError } = useAuction(auctionId ?? '')
+  const { data: auction, isPending, isError } = useAuction(auctionId ?? '')
 
   if (auctionId === undefined) return <p className="error">Missing auction id.</p>
   if (isPending) return <p className="muted">Loading auction…</p>
   if (isError) return <p className="error">Couldn’t load this auction — does it exist?</p>
 
-  const auction = data.body
   return (
     <section>
       <title>{`${auction.wineName} — madrileno`}</title>
