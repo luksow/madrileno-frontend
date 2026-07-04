@@ -8,6 +8,7 @@ export const v1AuthSessionsContract = {
       path: '/v1/auth/sessions',
       summary: 'Revoke all refresh tokens for a given user agent',
       description: 'Revoke sessions by user agent',
+      tags: ['Auth'],
       successStatus: 204,
       inputStructure: 'detailed'
     })
@@ -21,12 +22,13 @@ export const v1AuthSessionsContract = {
       path: '/v1/auth/sessions',
       summary: 'Returns active refresh tokens for the authenticated user',
       description: 'List active sessions. Each entry\'s `createdAt` is when that refresh token was issued — login time, or the timestamp of the last JWT refresh that rotated it (refresh tokens are single-use, so the live one is always the newest in its chain).',
+      tags: ['Auth'],
       successStatus: 200,
       inputStructure: 'detailed'
     })
     .output(z.array(z.object({
-        "createdAt": z.coerce.date(),
-        "expiresAt": z.coerce.date().nullish(),
+        "createdAt": z.string().datetime({ offset: true }),
+        "expiresAt": z.string().datetime({ offset: true }).nullish(),
         "id": z.string().uuid(),
         "ipAddress": z.string(),
         "userAgent": z.string()})))

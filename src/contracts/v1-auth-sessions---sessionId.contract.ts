@@ -8,6 +8,7 @@ export const v1AuthSessionsSessionIdContract = {
       path: '/v1/auth/sessions/{sessionId}',
       summary: 'Revoke a refresh token by its ID',
       description: 'Revoke a specific session',
+      tags: ['Auth'],
       successStatus: 204,
       inputStructure: 'detailed'
     })

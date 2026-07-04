@@ -83,8 +83,10 @@ Design notes:
   origin at build time and add that frontend origin to the backend's
   `CORS_ALLOWED_ORIGINS`.
 - **SSR**: `docker build .` (multi-stage, healthcheck on `/healthz`), run with
-  `PORT`, `API_BASE_URL`, and (if the API is a different origin for browsers)
-  `VITE_API_BASE_URL` baked at build time + backend CORS as above.
+  `PORT` and `API_BASE_URL`. The production server forwards `/v1` to
+  `API_BASE_URL` (same-origin for browsers, mirroring the dev proxy), so no
+  CORS and no `VITE_API_BASE_URL` are needed unless you deliberately serve
+  the API from a different origin.
 
 ## Observability (opt-in)
 
@@ -98,11 +100,12 @@ to the backend traces. Unset = the SDK never loads (it's a lazy chunk).
 - **Types from the contract**: `Awaited<ReturnType<ApiClient['<key>']['get']>>`
   — never hand-written DTOs. `JsonifiedClient` keeps them wire-true
   (timestamps are ISO strings, matching what actually crosses HTTP).
-- **Errors stay typed and expected**: the backend's RFC 9457 Problem responses
-  are decoded by `OpenAPILink`'s `customErrorResponseBodyDecoder` into
-  `ORPCError`s (code = the stable Problem `type` tag, data = the envelope);
-  UI dispatches on the tag, not display text. Per-status response shapes live
-  in the generated `<name>Errors` maps in `src/contracts/`.
+- **Errors are declared and typed end to end**: the generated contracts declare
+  errors under the backend's stable Problem `type` codes (extracted from the
+  captured examples), the link's `customErrorResponseBodyDecoder` lifts RFC
+  9457 responses into defined `ORPCError`s under the same codes, and
+  `isDefinedError` narrows to the declared union. UI dispatches on the code,
+  never on display text.
 - **Temporal, not Date**: ESLint bans the `Date` global everywhere except
   `src/api/datetime.ts`, the wire boundary that converts ISO strings to
   `Temporal`.
@@ -124,11 +127,12 @@ typed client, routing, tests, SSR opt-in. After running the backend's own
 
 ## Scripts
 
-| Script                                   | What                                                                   |
-| ---------------------------------------- | ---------------------------------------------------------------------- |
-| `dev` / `build` / `preview`              | SPA (default)                                                          |
-| `dev:ssr` / `build:ssr` / `preview:ssr`  | SSR opt-in                                                             |
-| `typecheck` / `lint` / `format` / `test` | the gate (all run in CI)                                               |
-| `e2e`                                    | Playwright smoke vs the SSR server (needs the live backend; not in CI) |
-| `sync-contracts`                         | vendor the backend-generated contract                                  |
-| `init-project`                           | strip the demo for a fresh project                                     |
+| Script                                   | What                                                                                          |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `dev` / `build` / `preview`              | SPA (default)                                                                                 |
+| `dev:ssr` / `build:ssr` / `preview:ssr`  | SSR opt-in                                                                                    |
+| `typecheck` / `lint` / `format` / `test` | the gate (all run in CI)                                                                      |
+| `e2e` / `e2e:prod`                       | Playwright smoke vs the dev / built production SSR server (needs the live backend; not in CI) |
+| `smoke:docker`                           | build + run the SSR image, verify healthz, SSR HTML and the container healthcheck             |
+| `sync-contracts`                         | vendor the backend-generated contract                                                         |
+| `init-project`                           | strip the demo for a fresh project                                                            |

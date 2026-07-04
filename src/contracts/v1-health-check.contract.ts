@@ -8,6 +8,7 @@ export const v1HealthCheckContract = {
       path: '/v1/health-check',
       summary: 'Returns app metadata',
       description: 'Liveness probe — does not touch dependencies',
+      tags: ['Health Check'],
       successStatus: 200,
       inputStructure: 'detailed'
     })

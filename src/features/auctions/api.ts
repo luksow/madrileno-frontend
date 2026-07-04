@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-query'
 import { ORPCError } from '@orpc/client'
 import { asProblem, type Problem } from '../../api/problem'
-import { orpc, type ApiClient } from '../../api/orpc'
+import { orpc, type ApiClient, type OrpcUtils } from '../../api/orpc'
 
 // Response types inferred straight from the generated contract via the client —
 // rename a field in a backend DTO and `npm run typecheck` fails right here or
@@ -38,17 +38,22 @@ export function useAuction(auctionId: string) {
   return useQuery(auctionRoute.get.queryOptions({ input: { params: { auctionId } } }))
 }
 
-export function useBids(auctionId: string) {
-  return useInfiniteQuery(
-    bidsRoute.get.infiniteOptions({
-      input: (pageParam: string | undefined) => ({
-        params: { auctionId },
-        query: { limit: BIDS_PAGE_SIZE, 'after-id': pageParam },
-      }),
-      initialPageParam: undefined as string | undefined,
-      getNextPageParam: (last) => (last.hasMore ? last.items.at(-1)?.id : undefined),
+// One definition for the bids cursor query, shared by the browser hook and the
+// SSR prefetch: oRPC derives query keys from procedure path + input, so the
+// two sides MUST build identical inputs or hydration misses the cache.
+export function bidsInfiniteOptions(utils: OrpcUtils, auctionId: string) {
+  return utils['v1-auctions---auctionId-bids'].get.infiniteOptions({
+    input: (pageParam: string | undefined) => ({
+      params: { auctionId },
+      query: { limit: BIDS_PAGE_SIZE, 'after-id': pageParam },
     }),
-  )
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => (last.hasMore ? last.items.at(-1)?.id : undefined),
+  })
+}
+
+export function useBids(auctionId: string) {
+  return useInfiniteQuery(bidsInfiniteOptions(orpc, auctionId))
 }
 
 export function usePlaceBid(auctionId: string) {
@@ -67,11 +72,12 @@ export function usePlaceBid(auctionId: string) {
   )
 }
 
-// Expected rejections (401/403/404/409) surface as thrown ORPCError whose
-// `data` is the backend's RFC 9457 Problem envelope (the generated
-// `<name>Errors` maps in src/contracts describe the per-status shapes).
-// Anything else returns null and is surfaced generically.
+// Expected rejections surface as DEFINED ORPCErrors: the contract declares
+// them under their Problem `type` codes, and the link's decoder marks decoded
+// Problems defined (isDefinedError's runtime check, spelled out here because
+// the guard can't narrow from `unknown`). Anything else — network failure,
+// undeclared status — returns null and is surfaced generically.
 export function bidRejection(error: unknown): Problem | null {
-  if (!(error instanceof ORPCError)) return null
+  if (!(error instanceof ORPCError) || !error.defined) return null
   return asProblem(error.data)
 }

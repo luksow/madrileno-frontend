@@ -8,19 +8,50 @@ export const v1AuctionsAuctionIdContract = {
       path: '/v1/auctions/{auctionId}',
       summary: 'Seller-only: cancels an open auction',
       description: 'Cancel an auction',
+      tags: ['Auctions'],
       successStatus: 204,
       inputStructure: 'detailed'
     })
     .input(z.object({
       params: z.object({auctionId: z.string().uuid()})
     }))
-    .output(z.void()),
+    .output(z.void())
+    .errors({
+      'result:auction-not-found': {
+        status: 404,
+        data: z.object({
+        "detail": z.string().describe("Human-readable explanation").nullish(),
+        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
+        "status": z.number().int().describe("HTTP status code"),
+        "title": z.string().describe("Short human-readable summary"),
+        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+      },
+      'result:auction-not-open': {
+        status: 409,
+        data: z.object({
+        "detail": z.string().describe("Human-readable explanation").nullish(),
+        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
+        "status": z.number().int().describe("HTTP status code"),
+        "title": z.string().describe("Short human-readable summary"),
+        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+      },
+      'result:not-owner': {
+        status: 403,
+        data: z.object({
+        "detail": z.string().describe("Human-readable explanation").nullish(),
+        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
+        "status": z.number().int().describe("HTTP status code"),
+        "title": z.string().describe("Short human-readable summary"),
+        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+      }
+    }),
   get: oc
     .route({
       method: 'GET',
       path: '/v1/auctions/{auctionId}',
       summary: 'Unauthenticated: returns an auction with its current price',
       description: 'Get an auction by id',
+      tags: ['Auctions'],
       successStatus: 200,
       inputStructure: 'detailed'
     })
@@ -35,7 +66,7 @@ export const v1AuctionsAuctionIdContract = {
         "currency": z.string(),
         "currentPrice": z.number(),
         "description": z.string().nullish(),
-        "endsAt": z.coerce.date(),
+        "endsAt": z.string().datetime({ offset: true }),
         "id": z.string().uuid(),
         "producerName": z.string(),
         "rating": z.object({
@@ -44,39 +75,19 @@ export const v1AuctionsAuctionIdContract = {
         "region": z.string(),
         "sellerId": z.string().uuid(),
         "startingPrice": z.number(),
-        "startsAt": z.coerce.date(),
+        "startsAt": z.string().datetime({ offset: true }),
         "status": z.enum(["Cancelled","Closed","Open"]),
         "vintage": z.number().int().nullish(),
         "wineName": z.string()}))
-};
-
-export const v1AuctionsAuctionIdErrors = {
-  delete: {
-    403: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response"),
-    404: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response"),
-    409: z.object({
+    .errors({
+      'result:auction-not-found': {
+        status: 404,
+        data: z.object({
         "detail": z.string().describe("Human-readable explanation").nullish(),
         "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
         "status": z.number().int().describe("HTTP status code"),
         "title": z.string().describe("Short human-readable summary"),
         "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
-  },
-  get: {
-    404: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
-  }
+      }
+    })
 };

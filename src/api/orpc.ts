@@ -26,6 +26,8 @@ export function makeApiClient(baseUrl: string = env.apiBaseUrl): ApiClient {
     // The backend speaks RFC 9457 Problem Details, not oRPC's error envelope —
     // decode it so every expected rejection surfaces as an ORPCError whose
     // `code` is the stable Problem `type` tag and `data` the full envelope.
+    // The generated contracts declare errors under those same codes, and
+    // `defined: true` lets isDefinedError narrow to the declared, typed union.
     customErrorResponseBodyDecoder: (body, response) => {
       const problem = asProblem(body)
       if (problem === null) return null
@@ -33,6 +35,7 @@ export function makeApiClient(baseUrl: string = env.apiBaseUrl): ApiClient {
         status: response.status,
         message: problem.title,
         data: problem,
+        defined: true,
       })
     },
   })
@@ -49,3 +52,5 @@ export const orpc = createTanstackQueryUtils(client)
 export function makeOrpcUtils(baseUrl: string) {
   return createTanstackQueryUtils(makeApiClient(baseUrl))
 }
+
+export type OrpcUtils = typeof orpc

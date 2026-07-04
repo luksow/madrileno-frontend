@@ -8,6 +8,7 @@ export const v1AuctionsAuctionIdImagesImageIdContentContract = {
       path: '/v1/auctions/{auctionId}/images/{imageId}/content',
       summary: 'Public: image content',
       description: 'Stream or redirect to image bytes. The disk / in-memory backend streams; S3 returns 303 SeeOther with a presigned Location.',
+      tags: ['Auction images'],
       successStatus: 200,
       inputStructure: 'detailed'
     })
@@ -15,15 +16,15 @@ export const v1AuctionsAuctionIdImagesImageIdContentContract = {
       params: z.object({auctionId: z.string().uuid(), imageId: z.string().uuid()})
     }))
     .output(z.string())
-};
-
-export const v1AuctionsAuctionIdImagesImageIdContentErrors = {
-  get: {
-    404: z.object({
+    .errors({
+      'result:image-not-found': {
+        status: 404,
+        data: z.object({
         "detail": z.string().describe("Human-readable explanation").nullish(),
         "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
         "status": z.number().int().describe("HTTP status code"),
         "title": z.string().describe("Short human-readable summary"),
         "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
-  }
+      }
+    })
 };

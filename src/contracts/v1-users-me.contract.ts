@@ -8,6 +8,7 @@ export const v1UsersMeContract = {
       path: '/v1/users/me',
       summary: 'Returns the current user (id, fullName, emailAddress, emailVerified, avatarUrl)',
       description: 'Get the authenticated user\'s profile',
+      tags: ['Users'],
       successStatus: 200,
       inputStructure: 'detailed'
     })

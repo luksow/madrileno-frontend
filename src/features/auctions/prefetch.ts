@@ -1,7 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { matchPath } from 'react-router-dom'
 import { makeOrpcUtils } from '../../api/orpc'
-import { BIDS_PAGE_SIZE, PAGE_SIZE } from './api'
+import { bidsInfiniteOptions, PAGE_SIZE } from './api'
 
 // SSR prefetch for the PUBLIC pages only: the list at '/' and detail+bids at
 // '/auctions/:id'. These routes are unauthenticated on the backend, so the
@@ -31,16 +31,7 @@ export async function prefetchAuctionsForUrl(
       queryClient.prefetchQuery(
         utils['v1-auctions---auctionId'].get.queryOptions({ input: { params: { auctionId } } }),
       ),
-      queryClient.prefetchInfiniteQuery(
-        utils['v1-auctions---auctionId-bids'].get.infiniteOptions({
-          input: (pageParam: string | undefined) => ({
-            params: { auctionId },
-            query: { limit: BIDS_PAGE_SIZE, 'after-id': pageParam },
-          }),
-          initialPageParam: undefined as string | undefined,
-          getNextPageParam: (last) => (last.hasMore ? last.items.at(-1)?.id : undefined),
-        }),
-      ),
+      queryClient.prefetchInfiniteQuery(bidsInfiniteOptions(utils, auctionId)),
     ])
   }
 }

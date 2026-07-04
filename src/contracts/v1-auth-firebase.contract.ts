@@ -8,6 +8,7 @@ export const v1AuthFirebaseContract = {
       path: '/v1/auth/firebase',
       summary: 'Exchange Firebase token for internal JWT and refresh token',
       description: 'Authenticate with Firebase JWT token',
+      tags: ['Auth'],
       successStatus: 200,
       inputStructure: 'detailed'
     })
@@ -19,21 +20,24 @@ export const v1AuthFirebaseContract = {
         "jwt": z.string(),
         "refreshToken": z.string().uuid(),
         "userCreated": z.boolean()}))
-};
-
-export const v1AuthFirebaseErrors = {
-  post: {
-    401: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response"),
-    423: z.object({
+    .errors({
+      'result:invalid-token': {
+        status: 401,
+        data: z.object({
         "detail": z.string().describe("Human-readable explanation").nullish(),
         "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
         "status": z.number().int().describe("HTTP status code"),
         "title": z.string().describe("Short human-readable summary"),
         "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
-  }
+      },
+      'result:user-blocked': {
+        status: 423,
+        data: z.object({
+        "detail": z.string().describe("Human-readable explanation").nullish(),
+        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
+        "status": z.number().int().describe("HTTP status code"),
+        "title": z.string().describe("Short human-readable summary"),
+        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+      }
+    })
 };
