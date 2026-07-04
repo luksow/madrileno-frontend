@@ -18,7 +18,9 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "sync-contracts": "node scripts/sync-contracts.mjs",
-    "init-project": "node scripts/init-project.mjs"
+    "init-project": "node scripts/init-project.mjs",
+    "e2e:prod": "npm run build:ssr && cross-env E2E_PROD=1 playwright test",
+    "smoke:docker": "node scripts/docker-smoke.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
