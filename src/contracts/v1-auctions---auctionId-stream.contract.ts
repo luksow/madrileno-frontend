@@ -12,6 +12,6 @@ export const v1AuctionsAuctionIdStreamContract = {
       inputStructure: 'detailed'
     })
     .input(z.object({
-      params: z.object({auctionId: z.string().uuid()})
+      params: z.object({auctionId: z.uuid()})
     }))
 };

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
+import { createFlagRequestSchema, errorSchema, featureFlagDtoSchema4496 } from "./schemas";
 
 export const adminFeatureFlagsContract = {
   get: oc
@@ -12,31 +13,11 @@ export const adminFeatureFlagsContract = {
       successStatus: 200,
       inputStructure: 'detailed'
     })
-    .output(z.array(z.object({
-        "clientExposed": z.boolean(),
-        "createdAt": z.string().datetime({ offset: true }),
-        "defaultValue": z.object({}),
-        "description": z.string(),
-        "enabled": z.boolean(),
-        "id": z.string().uuid(),
-        "key": z.string(),
-        "rules": z.array(z.object({
-        "conditions": z.array(z.object({})),
-        "createdAt": z.string().datetime({ offset: true }),
-        "description": z.string(),
-        "id": z.string().uuid(),
-        "outcome": z.object({}),
-        "position": z.number().int()})),
-        "updatedAt": z.string().datetime({ offset: true })})))
+    .output(z.array(featureFlagDtoSchema4496))
     .errors({
       'rejection:authentication-failed': {
         status: 401,
-        data: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        data: errorSchema
       }
     }),
   post: oc
@@ -50,34 +31,9 @@ export const adminFeatureFlagsContract = {
       inputStructure: 'detailed'
     })
     .input(z.object({
-      body: z.object({
-        "clientExposed": z.boolean(),
-        "defaultValue": z.object({}),
-        "description": z.string(),
-        "enabled": z.boolean(),
-        "key": z.string(),
-        "rules": z.array(z.object({
-        "conditions": z.array(z.object({})),
-        "description": z.string(),
-        "outcome": z.object({}),
-        "position": z.number().int()}))})
+      body: createFlagRequestSchema
     }))
-    .output(z.object({
-        "clientExposed": z.boolean(),
-        "createdAt": z.string().datetime({ offset: true }),
-        "defaultValue": z.object({}),
-        "description": z.string(),
-        "enabled": z.boolean(),
-        "id": z.string().uuid(),
-        "key": z.string(),
-        "rules": z.array(z.object({
-        "conditions": z.array(z.object({})),
-        "createdAt": z.string().datetime({ offset: true }),
-        "description": z.string(),
-        "id": z.string().uuid(),
-        "outcome": z.object({}),
-        "position": z.number().int()})),
-        "updatedAt": z.string().datetime({ offset: true })}))
+    .output(featureFlagDtoSchema4496)
     .errors({
       'result:flag-invalid': {
         status: 400,
@@ -86,7 +42,7 @@ export const adminFeatureFlagsContract = {
         "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
         "status": z.number().int().describe("HTTP status code"),
         "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        "type": z.enum(["result:flag-invalid"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
       },
       'result:flag-key-exists': {
         status: 409,
@@ -95,7 +51,7 @@ export const adminFeatureFlagsContract = {
         "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
         "status": z.number().int().describe("HTTP status code"),
         "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        "type": z.enum(["result:flag-key-exists"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
       }
     })
 };

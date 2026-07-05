@@ -27,9 +27,9 @@ export const v1AuthSessionsContract = {
       inputStructure: 'detailed'
     })
     .output(z.array(z.object({
-        "createdAt": z.string().datetime({ offset: true }),
-        "expiresAt": z.string().datetime({ offset: true }).nullish(),
-        "id": z.string().uuid(),
+        "createdAt": z.iso.datetime({ offset: true }),
+        "expiresAt": z.iso.datetime({ offset: true }).nullish(),
+        "id": z.uuid(),
         "ipAddress": z.string(),
         "userAgent": z.string()})))
 };

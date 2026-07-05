@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
+import { authWithEmailRequestSchema, authenticatedResponseSchema, errorSchemafbd6 } from "./schemas";
 
 export const v1AuthDevContract = {
   post: oc
@@ -13,22 +14,13 @@ export const v1AuthDevContract = {
       inputStructure: 'detailed'
     })
     .input(z.object({
-      body: z.object({
-        "email": z.string()})
+      body: authWithEmailRequestSchema
     }))
-    .output(z.object({
-        "jwt": z.string(),
-        "refreshToken": z.string().uuid(),
-        "userCreated": z.boolean()}))
+    .output(authenticatedResponseSchema)
     .errors({
       'result:invalid-token': {
         status: 401,
-        data: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        data: errorSchemafbd6
       }
     })
 };

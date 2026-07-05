@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
+import { reorderImagesRequestSchema } from "./schemas";
 
 export const v1AuctionsAuctionIdImagesOrderContract = {
   patch: oc
@@ -13,9 +14,8 @@ export const v1AuctionsAuctionIdImagesOrderContract = {
       inputStructure: 'detailed'
     })
     .input(z.object({
-      params: z.object({auctionId: z.string().uuid()}),
-      body: z.object({
-        "orderedIds": z.array(z.string().uuid())})
+      params: z.object({auctionId: z.uuid()}),
+      body: reorderImagesRequestSchema
     }))
     .output(z.void())
     .errors({
@@ -26,7 +26,7 @@ export const v1AuctionsAuctionIdImagesOrderContract = {
         "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
         "status": z.number().int().describe("HTTP status code"),
         "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        "type": z.enum(["result:mismatched-ids"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
       }
     })
 };

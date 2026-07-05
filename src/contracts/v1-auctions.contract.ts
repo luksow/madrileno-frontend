@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
+import { auctionDtoSchema, createAuctionRequestSchema, pageSchema } from "./schemas";
 
 export const v1AuctionsContract = {
   get: oc
@@ -13,33 +14,9 @@ export const v1AuctionsContract = {
       inputStructure: 'detailed'
     })
     .input(z.object({
-      query: z.object({status: z.enum(["Cancelled","Closed","Open"]).nullish(), "seller-id": z.string().uuid().nullish(), "sort-by": z.enum(["CreatedAt","EndsAt","StartingPrice"]).nullish(), "sort-dir": z.enum(["Asc","Desc"]).nullish(), limit: z.number().int().nullish(), offset: z.number().int().nullish()}).optional()
+      query: z.object({status: z.enum(["Cancelled","Closed","Open"]).nullish(), "seller-id": z.uuid().nullish(), "sort-by": z.enum(["CreatedAt","EndsAt","StartingPrice"]).nullish(), "sort-dir": z.enum(["Asc","Desc"]).nullish(), limit: z.number().int().nullish(), offset: z.number().int().nullish()}).optional()
     }))
-    .output(z.object({
-        "items": z.array(z.object({
-        "appellation": z.string(),
-        "bottleCount": z.number().int(),
-        "bottleSize": z.enum(["DoubleMagnum","Half","Jeroboam","Magnum","Other","Standard"]),
-        "color": z.enum(["Dessert","Fortified","Orange","Red","Rose","Sparkling","White"]),
-        "currency": z.string(),
-        "currentPrice": z.number(),
-        "description": z.string().nullish(),
-        "endsAt": z.string().datetime({ offset: true }),
-        "id": z.string().uuid(),
-        "producerName": z.string(),
-        "rating": z.object({
-        "rating": z.number(),
-        "ratingsCount": z.number().int()}).nullish(),
-        "region": z.string(),
-        "sellerId": z.string().uuid(),
-        "startingPrice": z.number(),
-        "startsAt": z.string().datetime({ offset: true }),
-        "status": z.enum(["Cancelled","Closed","Open"]),
-        "vintage": z.number().int().nullish(),
-        "wineName": z.string()})),
-        "limit": z.number().int(),
-        "offset": z.number().int(),
-        "total": z.number().int()})),
+    .output(pageSchema),
   post: oc
     .route({
       method: 'POST',
@@ -51,42 +28,9 @@ export const v1AuctionsContract = {
       inputStructure: 'detailed'
     })
     .input(z.object({
-      body: z.object({
-        "appellation": z.string(),
-        "bottleCount": z.number().int(),
-        "bottleSize": z.enum(["DoubleMagnum","Half","Jeroboam","Magnum","Other","Standard"]),
-        "color": z.enum(["Dessert","Fortified","Orange","Red","Rose","Sparkling","White"]),
-        "currency": z.string(),
-        "description": z.string().nullish(),
-        "endsAt": z.string().datetime({ offset: true }),
-        "producerName": z.string(),
-        "region": z.string(),
-        "startingPrice": z.number(),
-        "startsAt": z.string().datetime({ offset: true }),
-        "vintage": z.number().int().nullish(),
-        "wineName": z.string()})
+      body: createAuctionRequestSchema
     }))
-    .output(z.object({
-        "appellation": z.string(),
-        "bottleCount": z.number().int(),
-        "bottleSize": z.enum(["DoubleMagnum","Half","Jeroboam","Magnum","Other","Standard"]),
-        "color": z.enum(["Dessert","Fortified","Orange","Red","Rose","Sparkling","White"]),
-        "currency": z.string(),
-        "currentPrice": z.number(),
-        "description": z.string().nullish(),
-        "endsAt": z.string().datetime({ offset: true }),
-        "id": z.string().uuid(),
-        "producerName": z.string(),
-        "rating": z.object({
-        "rating": z.number(),
-        "ratingsCount": z.number().int()}).nullish(),
-        "region": z.string(),
-        "sellerId": z.string().uuid(),
-        "startingPrice": z.number(),
-        "startsAt": z.string().datetime({ offset: true }),
-        "status": z.enum(["Cancelled","Closed","Open"]),
-        "vintage": z.number().int().nullish(),
-        "wineName": z.string()}))
+    .output(auctionDtoSchema)
     .errors({
       'result:invalid-window': {
         status: 400,
@@ -95,7 +39,7 @@ export const v1AuctionsContract = {
         "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
         "status": z.number().int().describe("HTTP status code"),
         "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        "type": z.enum(["result:invalid-window"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
       }
     })
 };

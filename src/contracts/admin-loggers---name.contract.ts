@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
+import { errorSchema, errorSchema330d, loggerLevelDtoSchema, setLoggerLevelRequestSchema } from "./schemas";
 
 export const adminLoggersNameContract = {
   get: oc
@@ -15,19 +16,11 @@ export const adminLoggersNameContract = {
     .input(z.object({
       params: z.object({name: z.string()})
     }))
-    .output(z.object({
-        "configuredLevel": z.string().nullish(),
-        "effectiveLevel": z.string(),
-        "name": z.string()}))
+    .output(loggerLevelDtoSchema)
     .errors({
       'result:logger-not-found': {
         status: 404,
-        data: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        data: errorSchema330d
       }
     }),
   post: oc
@@ -42,22 +35,13 @@ export const adminLoggersNameContract = {
     })
     .input(z.object({
       params: z.object({name: z.string()}),
-      body: z.object({
-        "level": z.string().nullish()})
+      body: setLoggerLevelRequestSchema
     }))
-    .output(z.object({
-        "configuredLevel": z.string().nullish(),
-        "effectiveLevel": z.string(),
-        "name": z.string()}))
+    .output(loggerLevelDtoSchema)
     .errors({
       'rejection:authentication-failed': {
         status: 401,
-        data: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        data: errorSchema
       },
       'result:invalid-log-level': {
         status: 400,
@@ -66,16 +50,11 @@ export const adminLoggersNameContract = {
         "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
         "status": z.number().int().describe("HTTP status code"),
         "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        "type": z.enum(["result:invalid-log-level"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
       },
       'result:logger-not-found': {
         status: 404,
-        data: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        data: errorSchema330d
       }
     })
 };

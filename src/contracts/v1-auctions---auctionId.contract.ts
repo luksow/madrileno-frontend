@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
+import { auctionDtoSchema, errorSchema1bb3, errorSchema4c2a, errorSchema7023 } from "./schemas";
 
 export const v1AuctionsAuctionIdContract = {
   delete: oc
@@ -13,36 +14,21 @@ export const v1AuctionsAuctionIdContract = {
       inputStructure: 'detailed'
     })
     .input(z.object({
-      params: z.object({auctionId: z.string().uuid()})
+      params: z.object({auctionId: z.uuid()})
     }))
     .output(z.void())
     .errors({
       'result:auction-not-found': {
         status: 404,
-        data: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        data: errorSchema7023
       },
       'result:auction-not-open': {
         status: 409,
-        data: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        data: errorSchema1bb3
       },
       'result:not-owner': {
         status: 403,
-        data: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        data: errorSchema4c2a
       }
     }),
   get: oc
@@ -56,38 +42,13 @@ export const v1AuctionsAuctionIdContract = {
       inputStructure: 'detailed'
     })
     .input(z.object({
-      params: z.object({auctionId: z.string().uuid()})
+      params: z.object({auctionId: z.uuid()})
     }))
-    .output(z.object({
-        "appellation": z.string(),
-        "bottleCount": z.number().int(),
-        "bottleSize": z.enum(["DoubleMagnum","Half","Jeroboam","Magnum","Other","Standard"]),
-        "color": z.enum(["Dessert","Fortified","Orange","Red","Rose","Sparkling","White"]),
-        "currency": z.string(),
-        "currentPrice": z.number(),
-        "description": z.string().nullish(),
-        "endsAt": z.string().datetime({ offset: true }),
-        "id": z.string().uuid(),
-        "producerName": z.string(),
-        "rating": z.object({
-        "rating": z.number(),
-        "ratingsCount": z.number().int()}).nullish(),
-        "region": z.string(),
-        "sellerId": z.string().uuid(),
-        "startingPrice": z.number(),
-        "startsAt": z.string().datetime({ offset: true }),
-        "status": z.enum(["Cancelled","Closed","Open"]),
-        "vintage": z.number().int().nullish(),
-        "wineName": z.string()}))
+    .output(auctionDtoSchema)
     .errors({
       'result:auction-not-found': {
         status: 404,
-        data: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        data: errorSchema7023
       }
     })
 };

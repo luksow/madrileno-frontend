@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
+import { auctionImageDtoSchema, errorSchema4c2a, errorSchema7023 } from "./schemas";
 
 export const v1AuctionsAuctionIdImagesContract = {
   get: oc
@@ -13,25 +14,9 @@ export const v1AuctionsAuctionIdImagesContract = {
       inputStructure: 'detailed'
     })
     .input(z.object({
-      params: z.object({auctionId: z.string().uuid()})
+      params: z.object({auctionId: z.uuid()})
     }))
-    .output(z.array(z.object({
-        "auctionId": z.string().uuid(),
-        "contentType": z.string(),
-        "fileName": z.string(),
-        "height": z.number().int().nullish(),
-        "id": z.string().uuid(),
-        "position": z.number().int(),
-        "sizeBytes": z.number().int(),
-        "uploadedAt": z.string().datetime({ offset: true }),
-        "url": z.string(),
-        "variants": z.array(z.object({
-        "format": z.string(),
-        "height": z.number().int(),
-        "spec": z.string(),
-        "url": z.string(),
-        "width": z.number().int()})),
-        "width": z.number().int().nullish()}))),
+    .output(z.array(auctionImageDtoSchema)),
   post: oc
     .route({
       method: 'POST',
@@ -43,44 +28,18 @@ export const v1AuctionsAuctionIdImagesContract = {
       inputStructure: 'detailed'
     })
     .input(z.object({
-      params: z.object({auctionId: z.string().uuid()}),
-      body: z.object({file: z.instanceof(File)})
+      params: z.object({auctionId: z.uuid()}),
+      body: z.object({file: z.file()})
     }))
-    .output(z.object({
-        "auctionId": z.string().uuid(),
-        "contentType": z.string(),
-        "fileName": z.string(),
-        "height": z.number().int().nullish(),
-        "id": z.string().uuid(),
-        "position": z.number().int(),
-        "sizeBytes": z.number().int(),
-        "uploadedAt": z.string().datetime({ offset: true }),
-        "url": z.string(),
-        "variants": z.array(z.object({
-        "format": z.string(),
-        "height": z.number().int(),
-        "spec": z.string(),
-        "url": z.string(),
-        "width": z.number().int()})),
-        "width": z.number().int().nullish()}))
+    .output(auctionImageDtoSchema)
     .errors({
       'result:auction-not-found': {
         status: 404,
-        data: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        data: errorSchema7023
       },
       'result:not-owner': {
         status: 403,
-        data: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        data: errorSchema4c2a
       }
     })
 };

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
+import { errorSchema1b1f, errorSchema4c2a } from "./schemas";
 
 export const v1AuctionsAuctionIdImagesImageIdContract = {
   delete: oc
@@ -13,27 +14,17 @@ export const v1AuctionsAuctionIdImagesImageIdContract = {
       inputStructure: 'detailed'
     })
     .input(z.object({
-      params: z.object({auctionId: z.string().uuid(), imageId: z.string().uuid()})
+      params: z.object({auctionId: z.uuid(), imageId: z.uuid()})
     }))
     .output(z.void())
     .errors({
       'result:image-not-found': {
         status: 404,
-        data: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        data: errorSchema1b1f
       },
       'result:not-owner': {
         status: 403,
-        data: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        data: errorSchema4c2a
       }
     })
 };

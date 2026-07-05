@@ -13,7 +13,7 @@ export const v1AuthSessionsSessionIdContract = {
       inputStructure: 'detailed'
     })
     .input(z.object({
-      params: z.object({sessionId: z.string().uuid()})
+      params: z.object({sessionId: z.uuid()})
     }))
     .output(z.void())
 };

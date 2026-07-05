@@ -17,5 +17,5 @@ export const v1UsersMeContract = {
         "emailAddress": z.string().nullish(),
         "emailVerified": z.boolean(),
         "fullName": z.string().nullish(),
-        "id": z.string().uuid()}))
+        "id": z.uuid()}))
 };

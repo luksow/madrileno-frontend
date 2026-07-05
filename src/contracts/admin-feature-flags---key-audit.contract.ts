@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
+import { featureFlagDtoSchema } from "./schemas";
 
 export const adminFeatureFlagsKeyAuditContract = {
   get: oc
@@ -20,42 +21,12 @@ export const adminFeatureFlagsKeyAuditContract = {
         "items": z.array(z.object({
         "action": z.enum(["Created","Deleted","Toggled","Updated"]),
         "actor": z.string(),
-        "after": z.object({
-        "clientExposed": z.boolean(),
-        "createdAt": z.string().datetime({ offset: true }),
-        "defaultValue": z.object({}),
-        "description": z.string(),
-        "enabled": z.boolean(),
-        "id": z.string().uuid(),
-        "key": z.string(),
-        "rules": z.array(z.object({
-        "conditions": z.array(z.object({})),
-        "createdAt": z.string().datetime({ offset: true }),
-        "description": z.string(),
-        "id": z.string().uuid(),
-        "outcome": z.object({}),
-        "position": z.number().int()})),
-        "updatedAt": z.string().datetime({ offset: true })}).nullish(),
-        "before": z.object({
-        "clientExposed": z.boolean(),
-        "createdAt": z.string().datetime({ offset: true }),
-        "defaultValue": z.object({}),
-        "description": z.string(),
-        "enabled": z.boolean(),
-        "id": z.string().uuid(),
-        "key": z.string(),
-        "rules": z.array(z.object({
-        "conditions": z.array(z.object({})),
-        "createdAt": z.string().datetime({ offset: true }),
-        "description": z.string(),
-        "id": z.string().uuid(),
-        "outcome": z.object({}),
-        "position": z.number().int()})),
-        "updatedAt": z.string().datetime({ offset: true })}).nullish(),
-        "createdAt": z.string().datetime({ offset: true }),
-        "flagId": z.string().uuid().nullish(),
+        "after": featureFlagDtoSchema.nullish(),
+        "before": featureFlagDtoSchema.nullish(),
+        "createdAt": z.iso.datetime({ offset: true }),
+        "flagId": z.uuid().nullish(),
         "flagKey": z.string(),
-        "id": z.string().uuid()})),
+        "id": z.uuid()})),
         "limit": z.number().int(),
         "offset": z.number().int(),
         "total": z.number().int()}))

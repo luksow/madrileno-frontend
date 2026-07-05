@@ -1,17 +1,14 @@
-import { createORPCClient, ORPCError } from '@orpc/client'
-import type { ContractRouterClient } from '@orpc/contract'
-import type { JsonifiedClient } from '@orpc/openapi-client'
-import { OpenAPILink } from '@orpc/openapi-client/fetch'
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
-import { contracts } from '../contracts/contracts'
+import { createContractsClient, type ContractsClient } from '../contracts/client'
 import { env } from '../env'
 import { makeAuthorizedFetch } from './client'
-import { asProblem } from './problem'
 
-// JsonifiedClient: over HTTP every value crosses a JSON boundary, so the client
-// types reflect the wire truth — z.coerce.date() fields arrive (and stay) ISO
-// strings. No Date instances ever enter the query cache.
-export type ApiClient = JsonifiedClient<ContractRouterClient<typeof contracts>>
+// The generated client factory (src/contracts/client.ts) ships the OpenAPILink
+// pre-wired with the error decoder: RFC 9457 bodies become defined ORPCErrors
+// under the contract-declared codes, so isDefinedError narrows end to end.
+// Types are wire-true (timestamps are ISO strings). We only add our auth-aware
+// fetch (bearer + single-flight 401 refresh).
+export type ApiClient = ContractsClient
 
 export function makeApiClient(baseUrl: string = env.apiBaseUrl): ApiClient {
   const url =
@@ -20,26 +17,7 @@ export function makeApiClient(baseUrl: string = env.apiBaseUrl): ApiClient {
       : typeof window !== 'undefined'
         ? window.location.origin
         : 'http://localhost:9000'
-  const link = new OpenAPILink(contracts, {
-    url,
-    fetch: makeAuthorizedFetch(url),
-    // The backend speaks RFC 9457 Problem Details, not oRPC's error envelope —
-    // decode it so every expected rejection surfaces as an ORPCError whose
-    // `code` is the stable Problem `type` tag and `data` the full envelope.
-    // The generated contracts declare errors under those same codes, and
-    // `defined: true` lets isDefinedError narrow to the declared, typed union.
-    customErrorResponseBodyDecoder: (body, response) => {
-      const problem = asProblem(body)
-      if (problem === null) return null
-      return new ORPCError(problem.type, {
-        status: response.status,
-        message: problem.title,
-        data: problem,
-        defined: true,
-      })
-    },
-  })
-  return createORPCClient(link)
+  return createContractsClient(url, { fetch: makeAuthorizedFetch(url) })
 }
 
 export const client: ApiClient = makeApiClient()

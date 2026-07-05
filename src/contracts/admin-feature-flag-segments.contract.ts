@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
+import { createSegmentRequestSchema, segmentDtoSchema } from "./schemas";
 
 export const adminFeatureFlagSegmentsContract = {
   get: oc
@@ -12,13 +13,7 @@ export const adminFeatureFlagSegmentsContract = {
       successStatus: 200,
       inputStructure: 'detailed'
     })
-    .output(z.array(z.object({
-        "conditions": z.array(z.object({})),
-        "createdAt": z.string().datetime({ offset: true }),
-        "description": z.string(),
-        "id": z.string().uuid(),
-        "name": z.string(),
-        "updatedAt": z.string().datetime({ offset: true })}))),
+    .output(z.array(segmentDtoSchema)),
   post: oc
     .route({
       method: 'POST',
@@ -30,18 +25,9 @@ export const adminFeatureFlagSegmentsContract = {
       inputStructure: 'detailed'
     })
     .input(z.object({
-      body: z.object({
-        "conditions": z.array(z.object({})),
-        "description": z.string(),
-        "name": z.string()})
+      body: createSegmentRequestSchema
     }))
-    .output(z.object({
-        "conditions": z.array(z.object({})),
-        "createdAt": z.string().datetime({ offset: true }),
-        "description": z.string(),
-        "id": z.string().uuid(),
-        "name": z.string(),
-        "updatedAt": z.string().datetime({ offset: true })}))
+    .output(segmentDtoSchema)
     .errors({
       'result:segment-name-exists': {
         status: 409,
@@ -50,7 +36,7 @@ export const adminFeatureFlagSegmentsContract = {
         "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
         "status": z.number().int().describe("HTTP status code"),
         "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        "type": z.enum(["result:segment-name-exists"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
       }
     })
 };

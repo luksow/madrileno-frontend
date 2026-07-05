@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
+import { errorSchema } from "./schemas";
 
 export const adminHeapdumpContract = {
   post: oc
@@ -23,12 +24,7 @@ export const adminHeapdumpContract = {
     .errors({
       'rejection:authentication-failed': {
         status: 401,
-        data: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        data: errorSchema
       }
     })
 };
