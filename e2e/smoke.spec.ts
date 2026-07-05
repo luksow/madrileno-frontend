@@ -13,7 +13,9 @@ test('server renders the public auction list (raw HTML, no JS)', async ({ reques
 test('hydration reuses the dehydrated cache — no client refetch', async ({ page }) => {
   const apiCalls: string[] = []
   page.on('request', (req) => {
-    if (req.url().includes('/v1/auctions')) apiCalls.push(req.url())
+    // Path prefix, not substring: in dev Vite serves the vendored contract
+    // sources under /src/contracts/v1/, which must not count as API traffic.
+    if (new URL(req.url()).pathname.startsWith('/v1/auctions')) apiCalls.push(req.url())
   })
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Wine auctions' })).toBeVisible()

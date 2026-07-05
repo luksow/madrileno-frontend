@@ -48,7 +48,7 @@ describe('the authorized fetch behind the oRPC client', () => {
       }),
     )
 
-    const user = await makeApiClient(BASE)['v1-users-me'].get()
+    const user = await makeApiClient(BASE).v1.users.me.get()
 
     expect(user.id).toBe(USER.id)
     expect(refreshCalls).toBe(1)
@@ -70,7 +70,7 @@ describe('the authorized fetch behind the oRPC client', () => {
     )
 
     const client = makeApiClient(BASE)
-    const [a, b] = await Promise.all([client['v1-users-me'].get(), client['v1-users-me'].get()])
+    const [a, b] = await Promise.all([client.v1.users.me.get(), client.v1.users.me.get()])
 
     // Without single-flight the second refresh would present the already-used
     // (rotated) token and kill the session.
@@ -92,7 +92,7 @@ describe('the authorized fetch behind the oRPC client', () => {
       http.post(`${BASE}/v1/auth/refresh-token`, reject401),
     )
 
-    await expect(makeApiClient(BASE)['v1-users-me'].get()).rejects.toThrow()
+    await expect(makeApiClient(BASE).v1.users.me.get()).rejects.toThrow()
     expect(tokenStore.get()).toBeNull()
   })
 
@@ -106,7 +106,7 @@ describe('the authorized fetch behind the oRPC client', () => {
       }),
     )
 
-    const user = await makeApiClient(BASE)['v1-users-me'].get()
+    const user = await makeApiClient(BASE).v1.users.me.get()
 
     expect(user.id).toBe(USER.id)
     expect(sawAuthHeader).toBeNull()

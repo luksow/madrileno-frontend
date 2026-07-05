@@ -12,18 +12,20 @@ import { orpc, type ApiClient, type OrpcUtils } from '../../api/orpc'
 // Response types inferred straight from the generated contract via the client —
 // rename a field in a backend DTO and `npm run typecheck` fails right here or
 // at a call site. JsonifiedClient keeps them wire-true (timestamps are strings).
-export type AuctionsPage = Awaited<ReturnType<ApiClient['v1-auctions']['get']>>
+export type AuctionsPage = Awaited<ReturnType<ApiClient['v1']['auctions']['get']>>
 export type AuctionSummary = AuctionsPage['items'][number]
-export type Auction = Awaited<ReturnType<ApiClient['v1-auctions---auctionId']['get']>>
-export type BidsPage = Awaited<ReturnType<ApiClient['v1-auctions---auctionId-bids']['get']>>
+export type Auction = Awaited<ReturnType<ApiClient['v1']['auctions']['byAuctionId']['get']>>
+export type BidsPage = Awaited<
+  ReturnType<ApiClient['v1']['auctions']['byAuctionId']['bids']['get']>
+>
 
 export const PAGE_SIZE = 12
 export const BIDS_PAGE_SIZE = 10
 
 // The generated dash-keys, aliased once — call sites below read naturally.
-const auctionsRoute = orpc['v1-auctions']
-const auctionRoute = orpc['v1-auctions---auctionId']
-const bidsRoute = orpc['v1-auctions---auctionId-bids']
+const auctionsRoute = orpc.v1.auctions
+const auctionRoute = orpc.v1.auctions.byAuctionId
+const bidsRoute = orpc.v1.auctions.byAuctionId.bids
 
 export function useAuctionsPage(offset: number) {
   return useQuery(
@@ -42,7 +44,7 @@ export function useAuction(auctionId: string) {
 // SSR prefetch: oRPC derives query keys from procedure path + input, so the
 // two sides MUST build identical inputs or hydration misses the cache.
 export function bidsInfiniteOptions(utils: OrpcUtils, auctionId: string) {
-  return utils['v1-auctions---auctionId-bids'].get.infiniteOptions({
+  return utils.v1.auctions.byAuctionId.bids.get.infiniteOptions({
     input: (pageParam: string | undefined) => ({
       params: { auctionId },
       query: { limit: BIDS_PAGE_SIZE, 'after-id': pageParam },

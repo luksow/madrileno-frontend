@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
-import { errorSchema } from "./schemas";
+import { errorSchema } from "../schemas";
 
-export const v1FeatureFlagsContract = {
+export const v1FeatureFlags = {
   get: oc
     .route({
       method: 'GET',

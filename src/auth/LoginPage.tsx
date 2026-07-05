@@ -23,7 +23,7 @@ export function LoginPage() {
   const onSubmit = handleSubmit(async ({ email }) => {
     setProblem(null)
     try {
-      const res = await client['v1-auth-dev'].post({ body: { email } })
+      const res = await client.v1.auth.dev.post({ body: { email } })
       tokenStore.set({ jwt: res.jwt, refreshToken: res.refreshToken, email })
       void navigate('/')
     } catch (error) {

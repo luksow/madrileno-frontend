@@ -17,7 +17,7 @@ export async function prefetchAuctionsForUrl(
 
   if (matchPath('/', pathname) !== null) {
     await queryClient.prefetchQuery(
-      utils['v1-auctions'].get.queryOptions({
+      utils.v1.auctions.get.queryOptions({
         input: { query: { limit: PAGE_SIZE, offset: 0 } },
       }),
     )
@@ -29,7 +29,7 @@ export async function prefetchAuctionsForUrl(
   if (auctionId !== undefined) {
     await Promise.all([
       queryClient.prefetchQuery(
-        utils['v1-auctions---auctionId'].get.queryOptions({ input: { params: { auctionId } } }),
+        utils.v1.auctions.byAuctionId.get.queryOptions({ input: { params: { auctionId } } }),
       ),
       queryClient.prefetchInfiniteQuery(bidsInfiniteOptions(utils, auctionId)),
     ])
