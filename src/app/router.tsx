@@ -7,7 +7,7 @@ import { auctionRoutes } from '../features/auctions/routes'
 
 const routes: RouteObject[] = [
   // frontend:auction-block-start
-  ...auctionRoutes, // '/' (auction list) + '/auctions/:auctionId'
+  ...auctionRoutes,
   // frontend:auction-block-end
   // frontend:home-anchor — init-project replaces this line with the Home '/' route
   { path: '/login', element: <LoginPage /> },

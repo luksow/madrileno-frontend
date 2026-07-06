@@ -8,9 +8,6 @@ interface State {
   error: Error | null
 }
 
-// Catches render-time crashes. Expected API failures never reach this — they
-// travel as values (query error states, PlaceBidOutcome); this is the backstop
-// for bugs.
 export class ErrorBoundary extends Component<Props, State> {
   override state: State = { error: null }
 

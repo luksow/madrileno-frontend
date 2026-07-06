@@ -1,9 +1,5 @@
 import { env } from '../env'
 
-// OpenObserve RUM, strictly opt-in: without the VITE_OPENOBSERVE_RUM_* env vars
-// this returns immediately and the SDK is never even downloaded (dynamic
-// import = separate chunk). Pairs with the backend's OpenObserve instance —
-// frontend sessions land next to backend traces.
 export async function initRum(): Promise<void> {
   const cfg = env.rum
   if (cfg === null) return

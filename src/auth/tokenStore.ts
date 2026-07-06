@@ -1,8 +1,5 @@
 import { setTokenProvider } from '../api/client'
 
-// Token storage: in-memory source of truth, persisted to localStorage in the
-// browser, absent on the server. SSR renders only public pages, so the server
-// never needs (or sees) a token.
 const STORAGE_KEY = 'madrileno.tokens'
 
 export interface Tokens {
@@ -28,8 +25,7 @@ function load(): Tokens | null {
 let current: Tokens | null = load()
 const listeners = new Set<Listener>()
 
-// Arrow-function properties (not methods) so they can be passed around freely —
-// useSyncExternalStore receives them detached from the object.
+// Arrow properties: useSyncExternalStore calls them detached from the object.
 export const tokenStore = {
   get: (): Tokens | null => current,
   set: (tokens: Tokens | null): void => {
@@ -48,10 +44,6 @@ export const tokenStore = {
   },
 }
 
-// Wire this store into the api layer's client as its token source, activating
-// bearer injection and the 401-refresh flow. Called explicitly from the client
-// entry (and test setups) — deliberately not a module side effect, so the
-// wiring is visible where the app boots.
 export function registerAuthTokenProvider(): void {
   setTokenProvider({
     jwt: () => tokenStore.get()?.jwt,

@@ -1,7 +1,5 @@
 import { z } from 'zod'
 
-// Typed, validated environment — the frontend's counterpart of the backend's
-// typed HOCON config. Fail fast at startup instead of at first use.
 const schema = z.object({
   VITE_API_BASE_URL: z.string().optional().default(''),
   VITE_OPENOBSERVE_RUM_CLIENT_TOKEN: z.string().optional(),
@@ -19,9 +17,7 @@ export interface RumConfig {
   applicationId: string
 }
 
-// Empty base URL = same-origin: the Vite dev proxy (and any reverse proxy in
-// prod) forwards /v1 to the backend. Tests need an absolute URL because Node's
-// fetch rejects relative ones; MSW handlers match on path regardless of host.
+// '' = same-origin (proxied /v1); tests need an absolute URL — Node fetch rejects relative ones.
 const apiBaseUrl =
   raw.VITE_API_BASE_URL !== ''
     ? raw.VITE_API_BASE_URL

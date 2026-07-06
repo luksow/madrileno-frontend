@@ -9,9 +9,7 @@ export type Prefetcher = (
   apiBaseUrl: string,
 ) => Promise<void>
 
-// Features that want their public pages server-rendered register a prefetcher
-// here; the SSR entry runs each one for the requested URL. Auth-gated data
-// never belongs here — the server holds no user token.
+// Public pages only — the server holds no user token.
 export const ssrPrefetchers: Prefetcher[] = [
   // frontend:auction-block-start
   prefetchAuctionsForUrl,

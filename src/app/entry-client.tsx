@@ -8,7 +8,6 @@ import '../styles/index.css'
 import { App } from './App'
 import { makeQueryClient } from './queryClient'
 
-// Wire auth into the api client before anything renders (and can fetch).
 registerAuthTokenProvider()
 
 declare global {
@@ -35,9 +34,7 @@ const app = (
 const root = document.getElementById('root')
 if (root === null) throw new Error('missing #root element')
 
-// One entry point, two modes: SSR-rendered HTML has element children (hydrate);
-// the plain SPA index.html has none (fresh render). Checking children — not
-// childNodes — because the SPA template contains an HTML comment placeholder.
+// SSR HTML has element children (hydrate); the SPA template has only a comment node.
 if (root.children.length > 0) {
   hydrateRoot(root, app)
 } else {

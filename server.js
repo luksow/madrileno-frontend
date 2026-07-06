@@ -1,14 +1,10 @@
-// SSR server — the opt-in mode (`npm run dev:ssr` / `npm run preview:ssr`).
-// The default workflow is the plain SPA (`npm run dev`); this server exists for
-// deployments that want server-rendered public pages. See README.
 import fs from 'node:fs/promises'
 import { Transform } from 'node:stream'
 import express from 'express'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const port = Number(process.env.PORT ?? 5173)
-// Where the server itself fetches the API from during prefetch (server-to-server,
-// so no CORS involved). The browser side keeps using VITE_API_BASE_URL.
+// Server-side prefetch target; the browser keeps using VITE_API_BASE_URL.
 const apiBaseUrl = process.env.API_BASE_URL ?? 'http://localhost:9000'
 const ABORT_DELAY = 10000
 
@@ -27,9 +23,8 @@ if (!isProduction) {
   app.use(compression())
   app.use(sirv('./dist/client', { extensions: [] }))
 
-  // Same-origin API in production, matching what Vite's dev proxy provides in
-  // dev mode: browser calls to /v1 are forwarded to the backend. Without this
-  // the SSR catch-all below would answer API calls with rendered HTML.
+  // Same-origin /v1 (Vite's proxy provides this in dev); without it the SSR
+  // catch-all below answers API calls with rendered HTML.
   const { Readable } = await import('node:stream')
   app.use('/v1', async (req, res) => {
     try {
@@ -85,8 +80,6 @@ app.use('*all', async (req, res) => {
       render = (await import('./dist/server/entry-server.js')).render
     }
 
-    // render() resolves once the shell is ready to stream (and rejects on a
-    // shell error, landing in the catch below) — safe to pipe immediately.
     const { pipe, abort, dehydratedState } = await render(url, apiBaseUrl)
 
     res.status(200)
@@ -97,8 +90,7 @@ app.use('*all', async (req, res) => {
     })
 
     const [htmlStart, htmlEnd] = template.split('<!--app-html-->')
-    // Escape `<` so a value inside the dehydrated state can't close the
-    // script tag and inject markup.
+    // Escape `<` so state can't close the script tag and inject markup.
     const stateJson = JSON.stringify(dehydratedState).replace(/</g, '\\u003c')
     const stateScript = `<script>window.__RQ_STATE__=${stateJson}</script>`
 

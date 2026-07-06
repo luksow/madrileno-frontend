@@ -12,13 +12,7 @@ export interface RenderResult {
   dehydratedState: DehydratedState
 }
 
-// SSR entry: run every registered prefetcher (src/app/ssrPrefetch.ts) for the
-// requested URL into a fresh per-request QueryClient, dehydrate it for the
-// client to hydrate, then stream.
-//
-// The promise resolves when the shell is ready to stream (onShellReady) and
-// rejects on a shell error — so the caller can pipe immediately after awaiting,
-// with no assumptions about React's callback scheduling.
+// Resolves on onShellReady, rejects on shell error — the caller can pipe immediately.
 export async function render(url: string, apiBaseUrl: string): Promise<RenderResult> {
   const queryClient = makeQueryClient()
   for (const prefetch of ssrPrefetchers) {

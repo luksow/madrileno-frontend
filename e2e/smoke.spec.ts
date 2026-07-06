@@ -13,13 +13,11 @@ test('server renders the public auction list (raw HTML, no JS)', async ({ reques
 test('hydration reuses the dehydrated cache — no client refetch', async ({ page }) => {
   const apiCalls: string[] = []
   page.on('request', (req) => {
-    // Path prefix, not substring: in dev Vite serves the vendored contract
-    // sources under /src/contracts/v1/, which must not count as API traffic.
+    // Path prefix, not substring — Vite serves the vendored contracts under /src/contracts/v1/.
     if (new URL(req.url()).pathname.startsWith('/v1/auctions')) apiCalls.push(req.url())
   })
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Wine auctions' })).toBeVisible()
-  // Interactivity proves hydration happened; the pager state proves React took over.
   await expect(page.getByRole('button', { name: '← Previous' })).toBeDisabled()
   expect(apiCalls).toHaveLength(0)
 })
@@ -39,6 +37,5 @@ test('login → open auction → too-low bid shows the typed rejection', async (
   await page.goto(`/auctions/${auction!.id}`)
   await page.getByLabel(/your bid/i).fill('1')
   await page.getByRole('button', { name: 'Place bid' }).click()
-  // Dispatched on the stable `bid-too-low` problem tag, not response text.
   await expect(page.getByText(/bid too low — someone got there first/i)).toBeVisible()
 })

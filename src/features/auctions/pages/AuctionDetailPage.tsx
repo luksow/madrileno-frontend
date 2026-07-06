@@ -18,7 +18,6 @@ type BidFormInput = z.input<typeof bidSchema>
 type BidForm = z.output<typeof bidSchema>
 
 function rejectionMessage(problem: Problem): string {
-  // Dispatch on the stable error tag, not the human-readable text.
   switch (problemTag(problem)) {
     case 'bid-too-low':
       return 'Bid too low — someone got there first. The current price has moved.'
@@ -60,8 +59,6 @@ function PlaceBidForm({ auction }: { auction: Auction }) {
     )
   })
 
-  // Expected rejections (bid too low, not open, …) arrive as typed mutation
-  // errors carrying the Problem envelope; anything else is surfaced generically.
   const rejection = placeBid.error !== null ? bidRejection(placeBid.error) : null
 
   return (

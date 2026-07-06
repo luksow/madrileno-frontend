@@ -1,6 +1,4 @@
-// The post-init landing page. Not routed while the auction demo is present —
-// scripts/init-project.mjs wires it to '/' (at the router's home-anchor) when
-// it strips the demo.
+// Unrouted while the demo exists; init-project wires it to '/' at the router's home-anchor.
 export function Home() {
   return (
     <section>

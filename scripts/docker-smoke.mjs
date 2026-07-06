@@ -1,9 +1,6 @@
 #!/usr/bin/env node
-// Builds the SSR Docker image and verifies the container end to end: /healthz,
-// server-rendered public HTML (with the dehydrated cache script), and the
-// container's own HEALTHCHECK turning healthy. Needs the backend on :9000.
-//
-// Usage: npm run smoke:docker
+// Build the SSR image and verify the container: /healthz, SSR HTML, HEALTHCHECK.
+// Needs the backend on :9000. Usage: npm run smoke:docker
 import { execSync, spawnSync } from 'node:child_process'
 
 const IMAGE = 'madrileno-frontend:smoke'

@@ -1,12 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
-// E2E against the SSR server — one suite covers server-rendering, hydration,
-// and the interactive flows. Needs the backend running with dev auth enabled
-// and at least one auction (see README); deliberately not part of CI.
-//
-// Two modes, same tests:
-//   npm run e2e       — dev SSR (Vite middleware), port 5177
-//   npm run e2e:prod  — the built production bundle (dist/), port 5178
+// Needs the backend running with dev auth and one auction; not part of CI.
+// npm run e2e — dev SSR (:5177); npm run e2e:prod — built bundle (:5178).
 const prod = process.env.E2E_PROD === '1'
 const port = prod ? 5178 : 5177
 

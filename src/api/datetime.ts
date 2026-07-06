@@ -1,7 +1,4 @@
-// The wire boundary for time. Over the oRPC OpenAPI link, timestamps arrive
-// (and stay) ISO strings — JsonifiedClient types them that way — and this
-// module converts them to Temporal. ESLint bans the Date global everywhere
-// else (the frontend echo of the backend's noRandomUuid scalafix rule).
+// The only module allowed to touch Date (ESLint bans it elsewhere): wire values in, Temporal out.
 import { Temporal } from 'temporal-polyfill'
 
 export function toInstant(value: Date | string): Temporal.Instant {

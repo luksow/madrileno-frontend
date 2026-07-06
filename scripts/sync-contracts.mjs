@@ -1,17 +1,6 @@
 #!/usr/bin/env node
 // Vendor the backend-generated oRPC contract into src/contracts/.
-//
-// The backend emits the contract from its router specs (`sbt test` writes
-// target/baklava/orpc/src/**/*.ts — module files nest by path area). The
-// generated sources import only `zod` and the `@orpc/*` peers, so they
-// compile directly under Vite/tsc — no build step.
-// They are committed here so the frontend builds standalone (CI needs no backend).
-//
-// Loop: backend `sbt test` -> `npm run sync-contracts` -> `npm run typecheck`
-// (a renamed backend DTO field fails typecheck at the frontend call site).
-//
-// Usage: node scripts/sync-contracts.mjs [source-dir]
-//        CONTRACTS_SRC=<dir> node scripts/sync-contracts.mjs
+// Usage: node scripts/sync-contracts.mjs [source-dir]  (or CONTRACTS_SRC=<dir>)
 import fs from 'node:fs'
 import path from 'node:path'
 

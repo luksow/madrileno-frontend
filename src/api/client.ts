@@ -1,7 +1,3 @@
-// Auth-aware fetch used by the oRPC link: bearer injection plus a single
-// 401 -> refresh -> retry pass, transparent to callers. Token access goes
-// through a provider registered by the auth layer (registerAuthTokenProvider),
-// so the dependency points auth -> api.
 export interface TokenProvider {
   jwt(): string | undefined
   refreshToken(): string | undefined
@@ -25,7 +21,6 @@ async function doRefresh(baseUrl: string): Promise<string | null> {
     body: JSON.stringify({ refreshToken }),
   })
   if (res.status !== 200) {
-    // The refresh token itself was rejected: the session is over.
     p.invalidated()
     return null
   }
@@ -34,9 +29,7 @@ async function doRefresh(baseUrl: string): Promise<string | null> {
   return body.jwt
 }
 
-// Single-flight: concurrent 401s share one refresh. Without this, the second
-// caller would present the already-rotated (single-use) token and kill the
-// session.
+// Concurrent 401s must share one refresh: the refresh token is single-use.
 let refreshInFlight: Promise<string | null> | null = null
 
 function refreshOnce(baseUrl: string): Promise<string | null> {
@@ -48,8 +41,7 @@ function refreshOnce(baseUrl: string): Promise<string | null> {
 
 export function makeAuthorizedFetch(baseUrl: string): typeof globalThis.fetch {
   return async (input, init) => {
-    // Normalize to a Request so the attempt can be replayed after a refresh
-    // (a consumed body can't be re-sent; clones must be taken before use).
+    // A consumed body can't be re-sent; clone before every attempt.
     const request = new Request(input, init)
 
     const attempt = (jwt: string | undefined): Promise<Response> => {
@@ -65,8 +57,7 @@ export function makeAuthorizedFetch(baseUrl: string): typeof globalThis.fetch {
     if (first.status !== 401 || provider === null || provider.refreshToken() === undefined) {
       return first
     }
-    // Someone else may have refreshed while our request was in flight — if the
-    // current token already differs from the one we sent, just retry.
+    // If the token already rotated while we were in flight, retry without refreshing.
     const current = provider.jwt()
     const jwt = current !== undefined && current !== sentJwt ? current : await refreshOnce(baseUrl)
     if (jwt === null) return first

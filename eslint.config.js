@@ -6,10 +6,8 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  // Generated code and build output are not ours to lint.
   { ignores: ['dist', 'node_modules', 'src/contracts', 'coverage'] },
 
-  // TypeScript sources — type-aware.
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -27,13 +25,10 @@ export default tseslint.config(
       globals: globals.browser,
     },
     rules: {
-      // Underscore prefix = deliberately unused (matches tsc's convention).
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
       ],
-      // Mirrors the backend's `noRandomUuid` scalafix ban: wire values are converted
-      // at the boundary (src/api/datetime.ts), everything else uses Temporal.
       'no-restricted-globals': [
         'error',
         {
@@ -45,13 +40,11 @@ export default tseslint.config(
     },
   },
 
-  // The one file allowed to touch Date: the wire-boundary mapper.
   {
     files: ['src/api/datetime.ts'],
     rules: { 'no-restricted-globals': 'off' },
   },
 
-  // Plain JS (SSR server, scripts) — no type information available.
   {
     files: ['**/*.{js,mjs}'],
     extends: [js.configs.recommended, prettier],
