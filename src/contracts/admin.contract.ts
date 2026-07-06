@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
-import { createFlagRequestSchema, createSegmentRequestSchema, depCheckSchema, errorSchema, errorSchema330d, errorSchemab1f1, errorSchemab24e, evaluateFlagRequestSchema, featureFlagDtoSchema, featureFlagDtoSchema4496, loggerLevelDtoSchema, segmentDtoSchema, setLoggerLevelRequestSchema, toggleFlagRequestSchema, updateFlagRequestSchema, updateSegmentRequestSchema } from "./schemas";
+import { errorSchema } from "./schemas";
+import { createFlagRequestSchema, createSegmentRequestSchema, depCheckSchema, evaluateFlagRequestSchema, featureFlagDtoSchema, featureFlagDtoSchema4496, loggerLevelDtoSchema, segmentDtoSchema, setLoggerLevelRequestSchema, toggleFlagRequestSchema, updateFlagRequestSchema, updateSegmentRequestSchema } from "./admin.schemas";
 
 export const admin = {
   config: {
@@ -18,7 +19,7 @@ export const admin = {
       .errors({
         'rejection:authentication-failed': {
           status: 401,
-          data: errorSchema
+          data: errorSchema.extend({type: z.enum(["rejection:authentication-failed"]).describe("A URI reference identifying the problem type")})
         }
       })
   },
@@ -51,12 +52,7 @@ export const admin = {
       .errors({
         'result:segment-name-exists': {
           status: 409,
-          data: z.object({
-          "detail": z.string().describe("Human-readable explanation").nullish(),
-          "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-          "status": z.number().int().describe("HTTP status code"),
-          "title": z.string().describe("Short human-readable summary"),
-          "type": z.enum(["result:segment-name-exists"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+          data: errorSchema.extend({type: z.enum(["result:segment-name-exists"]).describe("A URI reference identifying the problem type")})
         }
       }),
     byName: {
@@ -77,7 +73,7 @@ export const admin = {
         .errors({
           'result:segment-not-found': {
             status: 404,
-            data: errorSchemab24e
+            data: errorSchema.extend({type: z.enum(["result:segment-not-found"]).describe("A URI reference identifying the problem type")})
           }
         }),
       put: oc
@@ -98,7 +94,7 @@ export const admin = {
         .errors({
           'result:segment-not-found': {
             status: 404,
-            data: errorSchemab24e
+            data: errorSchema.extend({type: z.enum(["result:segment-not-found"]).describe("A URI reference identifying the problem type")})
           }
         })
     }
@@ -118,7 +114,7 @@ export const admin = {
       .errors({
         'rejection:authentication-failed': {
           status: 401,
-          data: errorSchema
+          data: errorSchema.extend({type: z.enum(["rejection:authentication-failed"]).describe("A URI reference identifying the problem type")})
         }
       }),
     post: oc
@@ -138,21 +134,11 @@ export const admin = {
       .errors({
         'result:flag-invalid': {
           status: 400,
-          data: z.object({
-          "detail": z.string().describe("Human-readable explanation").nullish(),
-          "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-          "status": z.number().int().describe("HTTP status code"),
-          "title": z.string().describe("Short human-readable summary"),
-          "type": z.enum(["result:flag-invalid"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+          data: errorSchema.extend({type: z.enum(["result:flag-invalid"]).describe("A URI reference identifying the problem type")})
         },
         'result:flag-key-exists': {
           status: 409,
-          data: z.object({
-          "detail": z.string().describe("Human-readable explanation").nullish(),
-          "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-          "status": z.number().int().describe("HTTP status code"),
-          "title": z.string().describe("Short human-readable summary"),
-          "type": z.enum(["result:flag-key-exists"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+          data: errorSchema.extend({type: z.enum(["result:flag-key-exists"]).describe("A URI reference identifying the problem type")})
         }
       }),
     byKey: {
@@ -173,7 +159,7 @@ export const admin = {
         .errors({
           'result:flag-not-found': {
             status: 404,
-            data: errorSchemab1f1
+            data: errorSchema.extend({type: z.enum(["result:flag-not-found"]).describe("A URI reference identifying the problem type")})
           }
         }),
       get: oc
@@ -193,7 +179,7 @@ export const admin = {
         .errors({
           'result:flag-not-found': {
             status: 404,
-            data: errorSchemab1f1
+            data: errorSchema.extend({type: z.enum(["result:flag-not-found"]).describe("A URI reference identifying the problem type")})
           }
         }),
       put: oc
@@ -214,7 +200,7 @@ export const admin = {
         .errors({
           'result:flag-not-found': {
             status: 404,
-            data: errorSchemab1f1
+            data: errorSchema.extend({type: z.enum(["result:flag-not-found"]).describe("A URI reference identifying the problem type")})
           }
         }),
       audit: {
@@ -267,7 +253,7 @@ export const admin = {
           .errors({
             'result:flag-not-found': {
               status: 404,
-              data: errorSchemab1f1
+              data: errorSchema.extend({type: z.enum(["result:flag-not-found"]).describe("A URI reference identifying the problem type")})
             }
           })
       },
@@ -290,7 +276,7 @@ export const admin = {
           .errors({
             'result:flag-not-found': {
               status: 404,
-              data: errorSchemab1f1
+              data: errorSchema.extend({type: z.enum(["result:flag-not-found"]).describe("A URI reference identifying the problem type")})
             }
           })
       }
@@ -314,7 +300,7 @@ export const admin = {
       .errors({
         'rejection:authentication-failed': {
           status: 401,
-          data: errorSchema
+          data: errorSchema.extend({type: z.enum(["rejection:authentication-failed"]).describe("A URI reference identifying the problem type")})
         }
       })
   },
@@ -340,7 +326,7 @@ export const admin = {
       .errors({
         'rejection:authentication-failed': {
           status: 401,
-          data: errorSchema
+          data: errorSchema.extend({type: z.enum(["rejection:authentication-failed"]).describe("A URI reference identifying the problem type")})
         }
       })
   },
@@ -359,7 +345,7 @@ export const admin = {
       .errors({
         'rejection:authentication-failed': {
           status: 401,
-          data: errorSchema
+          data: errorSchema.extend({type: z.enum(["rejection:authentication-failed"]).describe("A URI reference identifying the problem type")})
         }
       }),
     byName: {
@@ -380,7 +366,7 @@ export const admin = {
         .errors({
           'result:logger-not-found': {
             status: 404,
-            data: errorSchema330d
+            data: errorSchema.extend({type: z.enum(["result:logger-not-found"]).describe("A URI reference identifying the problem type")})
           }
         }),
       post: oc
@@ -401,20 +387,15 @@ export const admin = {
         .errors({
           'rejection:authentication-failed': {
             status: 401,
-            data: errorSchema
+            data: errorSchema.extend({type: z.enum(["rejection:authentication-failed"]).describe("A URI reference identifying the problem type")})
           },
           'result:invalid-log-level': {
             status: 400,
-            data: z.object({
-            "detail": z.string().describe("Human-readable explanation").nullish(),
-            "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-            "status": z.number().int().describe("HTTP status code"),
-            "title": z.string().describe("Short human-readable summary"),
-            "type": z.enum(["result:invalid-log-level"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+            data: errorSchema.extend({type: z.enum(["result:invalid-log-level"]).describe("A URI reference identifying the problem type")})
           },
           'result:logger-not-found': {
             status: 404,
-            data: errorSchema330d
+            data: errorSchema.extend({type: z.enum(["result:logger-not-found"]).describe("A URI reference identifying the problem type")})
           }
         })
     }
@@ -434,7 +415,7 @@ export const admin = {
       .errors({
         'rejection:authentication-failed': {
           status: 401,
-          data: errorSchema
+          data: errorSchema.extend({type: z.enum(["rejection:authentication-failed"]).describe("A URI reference identifying the problem type")})
         }
       })
   }

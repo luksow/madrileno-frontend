@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
-import { authWithEmailRequestSchema, authWithFirebaseRequestSchema, authWithOidcRequestSchema, authWithRefreshTokenRequestSchema, authenticatedResponseSchema, errorSchemafbd6 } from "../schemas";
+import { errorSchema } from "../schemas";
+import { authWithEmailRequestSchema, authWithFirebaseRequestSchema, authWithOidcRequestSchema, authWithRefreshTokenRequestSchema, authenticatedResponseSchema } from "./auth.schemas";
 
 export const v1Auth = {
   dev: {
@@ -21,7 +22,7 @@ export const v1Auth = {
       .errors({
         'result:invalid-token': {
           status: 401,
-          data: errorSchemafbd6
+          data: errorSchema.extend({type: z.enum(["result:invalid-token"]).describe("A URI reference identifying the problem type")})
         }
       })
   },
@@ -43,16 +44,11 @@ export const v1Auth = {
       .errors({
         'result:invalid-token': {
           status: 401,
-          data: errorSchemafbd6
+          data: errorSchema.extend({type: z.enum(["result:invalid-token"]).describe("A URI reference identifying the problem type")})
         },
         'result:user-blocked': {
           status: 423,
-          data: z.object({
-          "detail": z.string().describe("Human-readable explanation").nullish(),
-          "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-          "status": z.number().int().describe("HTTP status code"),
-          "title": z.string().describe("Short human-readable summary"),
-          "type": z.enum(["result:user-blocked"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+          data: errorSchema.extend({type: z.enum(["result:user-blocked"]).describe("A URI reference identifying the problem type")})
         }
       })
   },
@@ -76,16 +72,11 @@ export const v1Auth = {
         .errors({
           'result:invalid-token': {
             status: 401,
-            data: errorSchemafbd6
+            data: errorSchema.extend({type: z.enum(["result:invalid-token"]).describe("A URI reference identifying the problem type")})
           },
           'result:unknown-provider': {
             status: 404,
-            data: z.object({
-            "detail": z.string().describe("Human-readable explanation").nullish(),
-            "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-            "status": z.number().int().describe("HTTP status code"),
-            "title": z.string().describe("Short human-readable summary"),
-            "type": z.enum(["result:unknown-provider"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+            data: errorSchema.extend({type: z.enum(["result:unknown-provider"]).describe("A URI reference identifying the problem type")})
           }
         })
     }
@@ -108,7 +99,7 @@ export const v1Auth = {
       .errors({
         'result:invalid-token': {
           status: 401,
-          data: errorSchemafbd6
+          data: errorSchema.extend({type: z.enum(["result:invalid-token"]).describe("A URI reference identifying the problem type")})
         }
       })
   },

@@ -18,7 +18,7 @@ export const v1FeatureFlags = {
     .errors({
       'rejection:authentication-failed': {
         status: 401,
-        data: errorSchema
+        data: errorSchema.extend({type: z.enum(["rejection:authentication-failed"]).describe("A URI reference identifying the problem type")})
       }
     })
 };

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
-import { auctionDtoSchema, auctionImageDtoSchema, createAuctionRequestSchema, errorSchema1b1f, errorSchema1bb3, errorSchema4c2a, errorSchema7023, pageSchema, placeBidRequestSchema, reorderImagesRequestSchema } from "../schemas";
+import { errorSchema } from "../schemas";
+import { auctionDtoSchema, auctionImageDtoSchema, createAuctionRequestSchema, pageSchema, placeBidRequestSchema, reorderImagesRequestSchema } from "./auctions.schemas";
 
 export const v1Auctions = {
   get: oc
@@ -34,12 +35,7 @@ export const v1Auctions = {
     .errors({
       'result:invalid-window': {
         status: 400,
-        data: z.object({
-        "detail": z.string().describe("Human-readable explanation").nullish(),
-        "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-        "status": z.number().int().describe("HTTP status code"),
-        "title": z.string().describe("Short human-readable summary"),
-        "type": z.enum(["result:invalid-window"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+        data: errorSchema.extend({type: z.enum(["result:invalid-window"]).describe("A URI reference identifying the problem type")})
       }
     }),
   byAuctionId: {
@@ -60,15 +56,15 @@ export const v1Auctions = {
       .errors({
         'result:auction-not-found': {
           status: 404,
-          data: errorSchema7023
+          data: errorSchema.extend({type: z.enum(["result:auction-not-found"]).describe("A URI reference identifying the problem type")})
         },
         'result:auction-not-open': {
           status: 409,
-          data: errorSchema1bb3
+          data: errorSchema.extend({type: z.enum(["result:auction-not-open"]).describe("A URI reference identifying the problem type")})
         },
         'result:not-owner': {
           status: 403,
-          data: errorSchema4c2a
+          data: errorSchema.extend({type: z.enum(["result:not-owner"]).describe("A URI reference identifying the problem type")})
         }
       }),
     get: oc
@@ -88,7 +84,7 @@ export const v1Auctions = {
       .errors({
         'result:auction-not-found': {
           status: 404,
-          data: errorSchema7023
+          data: errorSchema.extend({type: z.enum(["result:auction-not-found"]).describe("A URI reference identifying the problem type")})
         }
       }),
     bids: {
@@ -117,7 +113,7 @@ export const v1Auctions = {
         .errors({
           'result:auction-not-found': {
             status: 404,
-            data: errorSchema7023
+            data: errorSchema.extend({type: z.enum(["result:auction-not-found"]).describe("A URI reference identifying the problem type")})
           }
         }),
       post: oc
@@ -143,47 +139,27 @@ export const v1Auctions = {
         .errors({
           'result:already-highest-bidder': {
             status: 409,
-            data: z.object({
-            "detail": z.string().describe("Human-readable explanation").nullish(),
-            "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-            "status": z.number().int().describe("HTTP status code"),
-            "title": z.string().describe("Short human-readable summary"),
-            "type": z.enum(["result:already-highest-bidder"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+            data: errorSchema.extend({type: z.enum(["result:already-highest-bidder"]).describe("A URI reference identifying the problem type")})
           },
           'result:auction-not-found': {
             status: 404,
-            data: errorSchema7023
+            data: errorSchema.extend({type: z.enum(["result:auction-not-found"]).describe("A URI reference identifying the problem type")})
           },
           'result:auction-not-open': {
             status: 409,
-            data: errorSchema1bb3
+            data: errorSchema.extend({type: z.enum(["result:auction-not-open"]).describe("A URI reference identifying the problem type")})
           },
           'result:auction-not-started': {
             status: 409,
-            data: z.object({
-            "detail": z.string().describe("Human-readable explanation").nullish(),
-            "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-            "status": z.number().int().describe("HTTP status code"),
-            "title": z.string().describe("Short human-readable summary"),
-            "type": z.enum(["result:auction-not-started"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+            data: errorSchema.extend({type: z.enum(["result:auction-not-started"]).describe("A URI reference identifying the problem type")})
           },
           'result:bid-too-low': {
             status: 409,
-            data: z.object({
-            "detail": z.string().describe("Human-readable explanation").nullish(),
-            "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-            "status": z.number().int().describe("HTTP status code"),
-            "title": z.string().describe("Short human-readable summary"),
-            "type": z.enum(["result:bid-too-low"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+            data: errorSchema.extend({type: z.enum(["result:bid-too-low"]).describe("A URI reference identifying the problem type")})
           },
           'result:cannot-bid-on-own-auction': {
             status: 403,
-            data: z.object({
-            "detail": z.string().describe("Human-readable explanation").nullish(),
-            "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-            "status": z.number().int().describe("HTTP status code"),
-            "title": z.string().describe("Short human-readable summary"),
-            "type": z.enum(["result:cannot-bid-on-own-auction"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+            data: errorSchema.extend({type: z.enum(["result:cannot-bid-on-own-auction"]).describe("A URI reference identifying the problem type")})
           }
         })
     },
@@ -220,11 +196,11 @@ export const v1Auctions = {
         .errors({
           'result:auction-not-found': {
             status: 404,
-            data: errorSchema7023
+            data: errorSchema.extend({type: z.enum(["result:auction-not-found"]).describe("A URI reference identifying the problem type")})
           },
           'result:not-owner': {
             status: 403,
-            data: errorSchema4c2a
+            data: errorSchema.extend({type: z.enum(["result:not-owner"]).describe("A URI reference identifying the problem type")})
           }
         }),
       byImageId: {
@@ -245,11 +221,11 @@ export const v1Auctions = {
           .errors({
             'result:image-not-found': {
               status: 404,
-              data: errorSchema1b1f
+              data: errorSchema.extend({type: z.enum(["result:image-not-found"]).describe("A URI reference identifying the problem type")})
             },
             'result:not-owner': {
               status: 403,
-              data: errorSchema4c2a
+              data: errorSchema.extend({type: z.enum(["result:not-owner"]).describe("A URI reference identifying the problem type")})
             }
           }),
         content: {
@@ -270,7 +246,7 @@ export const v1Auctions = {
             .errors({
               'result:image-not-found': {
                 status: 404,
-                data: errorSchema1b1f
+                data: errorSchema.extend({type: z.enum(["result:image-not-found"]).describe("A URI reference identifying the problem type")})
               }
             })
         }
@@ -294,12 +270,7 @@ export const v1Auctions = {
           .errors({
             'result:mismatched-ids': {
               status: 400,
-              data: z.object({
-              "detail": z.string().describe("Human-readable explanation").nullish(),
-              "instance": z.string().describe("URI reference identifying the specific occurrence").nullish(),
-              "status": z.number().int().describe("HTTP status code"),
-              "title": z.string().describe("Short human-readable summary"),
-              "type": z.enum(["result:mismatched-ids"]).describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response")
+              data: errorSchema.extend({type: z.enum(["result:mismatched-ids"]).describe("A URI reference identifying the problem type")})
             }
           })
       }
