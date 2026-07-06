@@ -1,13 +1,8 @@
 import { http, HttpResponse } from 'msw'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { registerAuthTokenProvider, tokenStore } from '../auth/tokenStore'
-import { v1UsersMeContract } from '../contracts/v1-users-me.contract'
 import { server } from '../testing/mswServer'
-import { makeClient } from './client'
-
-beforeAll(() => {
-  registerAuthTokenProvider()
-})
+import { makeApiClient } from './orpc'
 
 const BASE = 'http://api.test'
 const USER = { id: '019ed9bb-0000-7000-8000-000000000042', emailVerified: true }
@@ -17,6 +12,10 @@ const REFRESHED = {
   userCreated: false,
 }
 
+beforeAll(() => {
+  registerAuthTokenProvider()
+})
+
 function loggedIn() {
   tokenStore.set({
     jwt: 'stale-jwt',
@@ -25,29 +24,33 @@ function loggedIn() {
   })
 }
 
-describe('makeClient', () => {
+function usersMe401Until(fresh: string) {
+  return http.get(`${BASE}/v1/users/me`, ({ request }) => {
+    if (request.headers.get('authorization') === `Bearer ${fresh}`) {
+      return HttpResponse.json(USER)
+    }
+    return HttpResponse.json(
+      { type: 'rejection:authentication-failed', status: 401, title: 'Could not authorize' },
+      { status: 401 },
+    )
+  })
+}
+
+describe('the authorized fetch behind the oRPC client', () => {
   it('injects the bearer token, refreshes once on 401, and retries', async () => {
     loggedIn()
     let refreshCalls = 0
     server.use(
-      http.get(`${BASE}/v1/users/me`, ({ request }) => {
-        if (request.headers.get('authorization') === 'Bearer fresh-jwt') {
-          return HttpResponse.json(USER)
-        }
-        return HttpResponse.json(
-          { type: 'rejection:authentication-failed', status: 401, title: 'Could not authorize' },
-          { status: 401 },
-        )
-      }),
+      usersMe401Until('fresh-jwt'),
       http.post(`${BASE}/v1/auth/refresh-token`, () => {
         refreshCalls += 1
         return HttpResponse.json(REFRESHED)
       }),
     )
 
-    const res = await makeClient(v1UsersMeContract, BASE).get()
+    const user = await makeApiClient(BASE).v1.users.me.get()
 
-    expect(res.status).toBe(200)
+    expect(user.id).toBe(USER.id)
     expect(refreshCalls).toBe(1)
     expect(tokenStore.get()?.jwt).toBe('fresh-jwt')
     expect(tokenStore.get()?.refreshToken).toBe(REFRESHED.refreshToken)
@@ -57,15 +60,7 @@ describe('makeClient', () => {
     loggedIn()
     let refreshCalls = 0
     server.use(
-      http.get(`${BASE}/v1/users/me`, ({ request }) => {
-        if (request.headers.get('authorization') === 'Bearer fresh-jwt') {
-          return HttpResponse.json(USER)
-        }
-        return HttpResponse.json(
-          { type: 'rejection:authentication-failed', status: 401, title: 'Could not authorize' },
-          { status: 401 },
-        )
-      }),
+      usersMe401Until('fresh-jwt'),
       http.post(`${BASE}/v1/auth/refresh-token`, async () => {
         refreshCalls += 1
         // Delay so the second 401 arrives while the first refresh is in flight.
@@ -74,37 +69,30 @@ describe('makeClient', () => {
       }),
     )
 
-    const client = makeClient(v1UsersMeContract, BASE)
-    const [a, b] = await Promise.all([client.get(), client.get()])
+    const client = makeApiClient(BASE)
+    const [a, b] = await Promise.all([client.v1.users.me.get(), client.v1.users.me.get()])
 
     // Without single-flight the second refresh would present the already-used
     // (rotated) token and kill the session.
     expect(refreshCalls).toBe(1)
-    expect(a.status).toBe(200)
-    expect(b.status).toBe(200)
+    expect(a.id).toBe(USER.id)
+    expect(b.id).toBe(USER.id)
     expect(tokenStore.get()?.jwt).toBe('fresh-jwt')
   })
 
-  it('logs out when the refresh token is rejected', async () => {
+  it('logs out when the refresh token is rejected (the 401 propagates as an error)', async () => {
     loggedIn()
+    const reject401 = () =>
+      HttpResponse.json(
+        { type: 'rejection:authentication-failed', status: 401, title: 'Could not authorize' },
+        { status: 401 },
+      )
     server.use(
-      http.get(`${BASE}/v1/users/me`, () =>
-        HttpResponse.json(
-          { type: 'rejection:authentication-failed', status: 401, title: 'Could not authorize' },
-          { status: 401 },
-        ),
-      ),
-      http.post(`${BASE}/v1/auth/refresh-token`, () =>
-        HttpResponse.json(
-          { type: 'rejection:authentication-failed', status: 401, title: 'Could not authorize' },
-          { status: 401 },
-        ),
-      ),
+      http.get(`${BASE}/v1/users/me`, reject401),
+      http.post(`${BASE}/v1/auth/refresh-token`, reject401),
     )
 
-    const res = await makeClient(v1UsersMeContract, BASE).get()
-
-    expect(res.status).toBe(401)
+    await expect(makeApiClient(BASE).v1.users.me.get()).rejects.toThrow()
     expect(tokenStore.get()).toBeNull()
   })
 
@@ -118,9 +106,9 @@ describe('makeClient', () => {
       }),
     )
 
-    const res = await makeClient(v1UsersMeContract, BASE).get()
+    const user = await makeApiClient(BASE).v1.users.me.get()
 
-    expect(res.status).toBe(200)
+    expect(user.id).toBe(USER.id)
     expect(sawAuthHeader).toBeNull()
   })
 })

@@ -26,6 +26,40 @@ if (!isProduction) {
   const sirv = (await import('sirv')).default
   app.use(compression())
   app.use(sirv('./dist/client', { extensions: [] }))
+
+  // Same-origin API in production, matching what Vite's dev proxy provides in
+  // dev mode: browser calls to /v1 are forwarded to the backend. Without this
+  // the SSR catch-all below would answer API calls with rendered HTML.
+  const { Readable } = await import('node:stream')
+  app.use('/v1', async (req, res) => {
+    try {
+      const target = new URL(req.originalUrl, apiBaseUrl)
+      const headers = { ...req.headers }
+      delete headers.host
+      delete headers.connection
+      const upstream = await fetch(target, {
+        method: req.method,
+        headers,
+        body: req.method === 'GET' || req.method === 'HEAD' ? undefined : req,
+        duplex: 'half',
+        redirect: 'manual',
+      })
+      res.status(upstream.status)
+      upstream.headers.forEach((value, key) => {
+        // fetch already decompressed the body; hop-by-hop headers must not be forwarded.
+        if (
+          !['content-encoding', 'content-length', 'transfer-encoding', 'connection'].includes(key)
+        ) {
+          res.setHeader(key, value)
+        }
+      })
+      if (upstream.body) Readable.fromWeb(upstream.body).pipe(res)
+      else res.end()
+    } catch (e) {
+      console.error('API forward failed:', e)
+      res.status(502).json({ type: 'about:blank', status: 502, title: 'Upstream unavailable' })
+    }
+  })
 }
 
 const templateHtml = isProduction ? await fs.readFile('./dist/client/index.html', 'utf-8') : ''

@@ -16,6 +16,6 @@ COPY --from=build /app/dist ./dist
 COPY server.js ./
 EXPOSE 5173
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-  CMD wget -qO- http://localhost:5173/healthz || exit 1
+  CMD wget -qO- "http://localhost:${PORT:-5173}/healthz" || exit 1
 USER node
 CMD ["node", "server.js"]

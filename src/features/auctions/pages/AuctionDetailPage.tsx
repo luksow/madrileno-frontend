@@ -14,7 +14,8 @@ function price(amount: number, currency: string): string {
 const bidSchema = z.object({
   amount: z.coerce.number().positive('Bid must be a positive amount'),
 })
-type BidForm = z.infer<typeof bidSchema>
+type BidFormInput = z.input<typeof bidSchema>
+type BidForm = z.output<typeof bidSchema>
 
 function rejectionMessage(problem: Problem): string {
   // Dispatch on the stable error tag, not the human-readable text.
@@ -42,7 +43,7 @@ function PlaceBidForm({ auction }: { auction: Auction }) {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<BidForm>({ resolver: zodResolver(bidSchema) })
+  } = useForm<BidFormInput, unknown, BidForm>({ resolver: zodResolver(bidSchema) })
 
   if (tokens === null) {
     return (
@@ -92,7 +93,7 @@ function BidHistory({ auctionId }: { auctionId: string }) {
     useBids(auctionId)
   if (isPending) return <p className="muted">Loading bids…</p>
   if (isError) return <p className="error">Couldn’t load the bid history.</p>
-  const bids = data.pages.flatMap((page) => page.body.items)
+  const bids = data.pages.flatMap((page) => page.items)
   return (
     <>
       {bids.length === 0 ? (

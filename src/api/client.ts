@@ -1,10 +1,7 @@
-import { initClient, tsRestFetchApi, type ApiFetcherArgs, type AppRouter } from '@ts-rest/core'
-import { env } from '../env'
-import { v1AuthRefreshTokenContract } from '../contracts/v1-auth-refresh-token.contract'
-
-// The api layer knows how to talk to the backend (including how to refresh a
-// session); it does not know where tokens live. The auth layer registers a
-// provider at startup — the dependency points auth -> api, never the reverse.
+// Auth-aware fetch used by the oRPC link: bearer injection plus a single
+// 401 -> refresh -> retry pass, transparent to callers. Token access goes
+// through a provider registered by the auth layer (registerAuthTokenProvider),
+// so the dependency points auth -> api.
 export interface TokenProvider {
   jwt(): string | undefined
   refreshToken(): string | undefined
@@ -14,32 +11,32 @@ export interface TokenProvider {
 
 let provider: TokenProvider | null = null
 
-export function setTokenProvider(p: TokenProvider): void {
-  provider = p
-}
-
-function withBearer(args: ApiFetcherArgs, jwt: string | undefined): ApiFetcherArgs {
-  if (jwt === undefined) return args
-  return { ...args, headers: { ...args.headers, authorization: `Bearer ${jwt}` } }
+export function setTokenProvider(tokenProvider: TokenProvider): void {
+  provider = tokenProvider
 }
 
 async function doRefresh(baseUrl: string): Promise<string | null> {
-  const refreshToken = provider?.refreshToken()
-  if (provider === null || refreshToken === undefined) return null
-  const client = initClient(v1AuthRefreshTokenContract, { baseUrl, baseHeaders: {} })
-  const res = await client.post({ body: { refreshToken } })
-  if (res.status === 200) {
-    provider.rotated(res.body.jwt, res.body.refreshToken)
-    return res.body.jwt
+  const p = provider
+  const refreshToken = p?.refreshToken()
+  if (p === null || refreshToken === undefined) return null
+  const res = await globalThis.fetch(`${baseUrl}/v1/auth/refresh-token`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ refreshToken }),
+  })
+  if (res.status !== 200) {
+    // The refresh token itself was rejected: the session is over.
+    p.invalidated()
+    return null
   }
-  // The refresh token itself was rejected: the session is over.
-  provider.invalidated()
-  return null
+  const body = (await res.json()) as { jwt: string; refreshToken: string }
+  p.rotated(body.jwt, body.refreshToken)
+  return body.jwt
 }
 
-// Single-flight: the backend ROTATES refresh tokens, so two concurrent 401s
-// must not both call refresh — the second would present an already-used token
-// and get the session killed. All concurrent callers share one refresh.
+// Single-flight: concurrent 401s share one refresh. Without this, the second
+// caller would present the already-rotated (single-use) token and kill the
+// session.
 let refreshInFlight: Promise<string | null> | null = null
 
 function refreshOnce(baseUrl: string): Promise<string | null> {
@@ -49,29 +46,30 @@ function refreshOnce(baseUrl: string): Promise<string | null> {
   return refreshInFlight
 }
 
-// The shared fetcher: bearer injection plus a single 401 -> refresh -> retry
-// pass. Runs below the contract types (it sees raw statuses), so the retry is
-// invisible to callers. Used by both the plain clients and the react-query tsr.
-export function authorizedApi(baseUrl: string) {
-  return async (args: ApiFetcherArgs) => {
+export function makeAuthorizedFetch(baseUrl: string): typeof globalThis.fetch {
+  return async (input, init) => {
+    // Normalize to a Request so the attempt can be replayed after a refresh
+    // (a consumed body can't be re-sent; clones must be taken before use).
+    const request = new Request(input, init)
+
+    const attempt = (jwt: string | undefined): Promise<Response> => {
+      const clone = request.clone()
+      if (jwt === undefined) return globalThis.fetch(clone)
+      const headers = new Headers(clone.headers)
+      headers.set('authorization', `Bearer ${jwt}`)
+      return globalThis.fetch(new Request(clone, { headers }))
+    }
+
     const sentJwt = provider?.jwt()
-    const first = await tsRestFetchApi(withBearer(args, sentJwt))
+    const first = await attempt(sentJwt)
     if (first.status !== 401 || provider === null || provider.refreshToken() === undefined) {
       return first
     }
-    // Someone else may have refreshed while our request was in flight — if
-    // the current token already differs from the one we sent, just retry.
+    // Someone else may have refreshed while our request was in flight — if the
+    // current token already differs from the one we sent, just retry.
     const current = provider.jwt()
     const jwt = current !== undefined && current !== sentJwt ? current : await refreshOnce(baseUrl)
     if (jwt === null) return first
-    return tsRestFetchApi(withBearer(args, jwt))
+    return attempt(jwt)
   }
-}
-
-export function makeClient<T extends AppRouter>(contract: T, baseUrl: string = env.apiBaseUrl) {
-  return initClient(contract, {
-    baseUrl,
-    baseHeaders: {},
-    api: authorizedApi(baseUrl),
-  })
 }

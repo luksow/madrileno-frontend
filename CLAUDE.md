@@ -14,21 +14,23 @@ madrileno backend template (sibling repo `../madrileno`).
   boundary with `toInstant` / `formatInstant`.
 - Strict TypeScript is on (`strict`, `noUncheckedIndexedAccess`). Don't cast
   your way around it; model the type properly.
-- Expected API failures travel as VALUES (query error states, result objects
-  like `PlaceBidOutcome`), not exceptions. Dispatch on the Problem `type` tag
-  (`problemTag`), never on human-readable text.
+- Expected API failures surface as `ORPCError`s carrying the backend's Problem
+  envelope in `error.data` (decoded by the link). Dispatch on the Problem
+  `type` tag (`problemTag`), never on human-readable text.
 
 # Structure
 
 - `src/app/` — shell: entries (SPA hydrate-or-render + SSR), router, layout,
   query client. `src/features/<name>/` — one folder per feature (api hooks,
-  pages, mocks, tests). `src/api/` — ts-rest client with bearer + 401-refresh,
-  Problem envelope, datetime boundary.
-- New API calls: use the canonical react-query client `tsr` from `src/api/tsr.ts`
-  (`tsr['<generated-key>'].get.useQuery({ queryKey, queryData })`); plain
-  one-shot calls use `makeClient(<contract>)`. Infer types via
-  `ClientInferResponseBody`. Share query keys between hooks and SSR prefetch
-  (register prefetchers in `src/app/ssrPrefetch.ts`).
+  pages, mocks, tests). `src/api/` — oRPC client (OpenAPILink with a custom
+  RFC 9457 Problem decoder) over an auth-aware fetch (bearer + 401-refresh),
+  datetime boundary.
+- New API calls: use the tanstack utils `orpc` from `src/api/orpc.ts`
+  (`useQuery(orpc['<generated-key>'].get.queryOptions({ input }))`); plain
+  one-shot calls go through `client` from the same module. Infer types from
+  `ApiClient` (`Awaited<ReturnType<ApiClient['<key>']['get']>>`). Query keys
+  derive from procedure path + input, so SSR prefetch (`makeOrpcUtils`) matches
+  automatically (register prefetchers in `src/app/ssrPrefetch.ts`).
 - Tests: Vitest + Testing Library + MSW. Register handlers per test with
   `server.use(...)`; type fixtures against contract-inferred types.
 - Blocks bracketed by `// frontend:auction-block-start` / `-end` are demo

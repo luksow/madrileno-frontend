@@ -1,17 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { ORPCError } from '@orpc/client'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
-import { makeClient } from '../api/client'
+import { client } from '../api/orpc'
 import { asProblem, type Problem } from '../api/problem'
-import { v1AuthDevContract } from '../contracts/v1-auth-dev.contract'
 import { tokenStore } from './tokenStore'
 
 const loginSchema = z.object({ email: z.string().email('Enter a valid email address') })
 type LoginForm = z.infer<typeof loginSchema>
-
-const devAuth = makeClient(v1AuthDevContract)
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -24,19 +22,16 @@ export function LoginPage() {
 
   const onSubmit = handleSubmit(async ({ email }) => {
     setProblem(null)
-    const res = await devAuth.post({ body: { email } })
-    if (res.status === 200) {
-      tokenStore.set({ jwt: res.body.jwt, refreshToken: res.body.refreshToken, email })
+    try {
+      const res = await client.v1.auth.dev.post({ body: { email } })
+      tokenStore.set({ jwt: res.jwt, refreshToken: res.refreshToken, email })
       void navigate('/')
-      return
+    } catch (error) {
+      const problem = error instanceof ORPCError ? asProblem(error.data) : null
+      setProblem(
+        problem ?? { type: 'unknown', status: 0, title: 'Login failed — is the backend up?' },
+      )
     }
-    setProblem(
-      asProblem(res.body) ?? {
-        type: 'unknown',
-        status: res.status,
-        title: `Login failed (${String(res.status)})`,
-      },
-    )
   })
 
   return (

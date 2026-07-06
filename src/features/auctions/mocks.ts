@@ -1,5 +1,4 @@
 import { http, HttpResponse } from 'msw'
-import { wireDate } from '../../api/datetime'
 import type { Problem } from '../../api/problem'
 import type { Auction, AuctionsPage, BidsPage } from './api'
 
@@ -26,8 +25,8 @@ export const auctionFixture: Auction = {
   currency: 'EUR',
   status: 'Open',
   rating: null,
-  startsAt: wireDate('2026-06-01T10:00:00Z'),
-  endsAt: wireDate('2026-07-01T10:00:00Z'),
+  startsAt: '2026-06-01T10:00:00Z',
+  endsAt: '2026-07-01T10:00:00Z',
 }
 
 export const auctionsPageFixture: AuctionsPage = {
@@ -45,7 +44,7 @@ export function bidsPageFixture(ids: readonly string[], hasMore: boolean, offset
       amount: 150 - (offset + i) * 10,
       currency: 'EUR',
       bidderRef: `bidder-${String(offset + i)}`,
-      createdAt: wireDate('2026-06-15T10:00:00Z'),
+      createdAt: '2026-06-15T10:00:00Z',
     })),
   }
 }
