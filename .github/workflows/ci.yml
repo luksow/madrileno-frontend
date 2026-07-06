@@ -22,6 +22,10 @@ jobs:
       - run: npm run test
       - run: npm run build
       - run: npm run build:ssr
+      # The demo-agnostic shell smoke needs no backend: '/' streams with the
+      # prefetch failure swallowed, so SSR + hydration wiring is still exercised.
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test e2e/smoke.spec.ts
 
   # The post-init shell must stay green: run init-project on the workspace
   # (throwaway in CI) and put the slimmed tree through the same gate.
@@ -40,3 +44,7 @@ jobs:
       - run: npm run test
       - run: npm run build
       - run: npm run build:ssr
+      # Only the shell smoke survives init (auctions.spec.ts is deleted); it
+      # runs backend-free, so the post-init e2e promise is gated here.
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
