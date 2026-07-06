@@ -1,10 +1,6 @@
 import { http, HttpResponse } from 'msw'
-import type { Problem } from '../../api/problem'
-import type { Auction, AuctionsPage, BidsPage } from './api'
-
-// Fixtures are typed against the contract-inferred types: if the backend DTO
-// changes shape, these fail typecheck the same way real call sites do — MSW
-// handlers are the frontend's echo of the backend's router specs.
+import type { Problem } from '../../../src/api/problem'
+import type { Auction, AuctionsPage, BidsPage } from '../../../src/features/auctions/api'
 
 export const AUCTION_ID = '019ed9bb-0000-7000-8000-000000000001'
 

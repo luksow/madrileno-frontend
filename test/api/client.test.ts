@@ -1,8 +1,8 @@
 import { http, HttpResponse } from 'msw'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { registerAuthTokenProvider, tokenStore } from '../auth/tokenStore'
-import { server } from '../testing/mswServer'
-import { makeApiClient } from './orpc'
+import { registerAuthTokenProvider, tokenStore } from '../../src/auth/tokenStore'
+import { server } from '../mswServer'
+import { makeApiClient } from '../../src/api/orpc'
 
 const BASE = 'http://api.test'
 const USER = { id: '019ed9bb-0000-7000-8000-000000000042', emailVerified: true }
@@ -72,8 +72,6 @@ describe('the authorized fetch behind the oRPC client', () => {
     const client = makeApiClient(BASE)
     const [a, b] = await Promise.all([client.v1.users.me.get(), client.v1.users.me.get()])
 
-    // Without single-flight the second refresh would present the already-used
-    // (rotated) token and kill the session.
     expect(refreshCalls).toBe(1)
     expect(a.id).toBe(USER.id)
     expect(b.id).toBe(USER.id)

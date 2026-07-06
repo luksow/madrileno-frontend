@@ -1,18 +1,5 @@
 #!/usr/bin/env node
-// Frontend counterpart of the backend's scripts/init-project.scala: remove the
-// wine-auction demo and leave a runnable shell (login + placeholder home).
-//
-// What it does:
-//   1. Deletes src/features/auctions/.
-//   2. Strips every block bracketed by `frontend:auction-block-start` /
-//      `frontend:auction-block-end` markers (imports, routes, SSR prefetch).
-//   3. Drops any leftover imports from features/auctions (belt and braces).
-//   4. With an optional <name> argument, renames the package and page title.
-//
-// The vendored contract in src/contracts/ is left alone: after you run the
-// backend's init-project (which deletes the auction module), `sbt test` +
-// `npm run sync-contracts` refresh it to match.
-//
+// Remove the wine-auction demo and leave a runnable shell (login + placeholder home).
 // Usage: node scripts/init-project.mjs [name]
 import fs from 'node:fs'
 import path from 'node:path'
@@ -22,9 +9,9 @@ const name = process.argv[2]
 const auctionsDir = path.join('src', 'features', 'auctions')
 const deletedDemo = fs.existsSync(auctionsDir)
 if (deletedDemo) fs.rmSync(auctionsDir, { recursive: true })
+const auctionsTestDir = path.join('test', 'features', 'auctions')
+if (fs.existsSync(auctionsTestDir)) fs.rmSync(auctionsTestDir, { recursive: true })
 
-// A block is every line from the one containing the start marker through the
-// one containing the end marker, inclusive. Works for `//` and `{/* */}` forms.
 const blockRe = /^.*frontend:auction-block-start[\s\S]*?frontend:auction-block-end.*(?:\n|$)/gm
 const leftoverImportRe = /^import .* from '.*features\/auctions.*'\r?\n/gm
 
@@ -50,8 +37,6 @@ for (const file of walk('src')) {
   }
 }
 
-// Wire Home to '/' at the router's anchor. The demo owned '/' until now; the
-// anchor keeps the route table free of duplicate paths in both states.
 const routerPath = path.join('src', 'app', 'router.tsx')
 const router = fs.readFileSync(routerPath, 'utf-8')
 const anchorRe = /^.*frontend:home-anchor.*(?:\n|$)/m

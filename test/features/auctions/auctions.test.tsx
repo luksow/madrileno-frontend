@@ -4,9 +4,9 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
-import { tokenStore } from '../../auth/tokenStore'
-import { App } from '../../app/App'
-import { server } from '../../testing/mswServer'
+import { tokenStore } from '../../../src/auth/tokenStore'
+import { App } from '../../../src/app/App'
+import { server } from '../../mswServer'
 import { AUCTION_ID, bidsPageFixture, bidTooLowProblem, detailHandler, listHandler } from './mocks'
 
 function renderApp(path: string) {
@@ -69,7 +69,6 @@ describe('auction detail', () => {
     ).toBeInTheDocument()
     await userEvent.type(screen.getByLabelText(/your bid/i), '10')
     await userEvent.click(screen.getByRole('button', { name: /place bid/i }))
-    // Dispatched on the stable problem tag `bid-too-low`, not the response text.
     expect(await screen.findByText(/bid too low — someone got there first/i)).toBeInTheDocument()
   })
 })
