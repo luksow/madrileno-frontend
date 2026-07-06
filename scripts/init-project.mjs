@@ -11,6 +11,8 @@ const deletedDemo = fs.existsSync(auctionsDir)
 if (deletedDemo) fs.rmSync(auctionsDir, { recursive: true })
 const auctionsTestDir = path.join('test', 'features', 'auctions')
 if (fs.existsSync(auctionsTestDir)) fs.rmSync(auctionsTestDir, { recursive: true })
+const auctionsE2e = path.join('e2e', 'auctions.spec.ts')
+if (fs.existsSync(auctionsE2e)) fs.rmSync(auctionsE2e)
 
 const blockRe = /^.*frontend:auction-block-start[\s\S]*?frontend:auction-block-end.*(?:\n|$)/gm
 const leftoverImportRe = /^import .* from '.*features\/auctions.*'\r?\n/gm

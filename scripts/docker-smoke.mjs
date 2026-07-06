@@ -43,7 +43,7 @@ if (!healthz) fail('/healthz never answered')
 console.log('healthz OK')
 
 const html = await (await fetch(`http://localhost:${String(PORT)}/`)).text()
-if (!html.includes('Wine auctions')) fail('SSR HTML missing rendered content')
+if (!/<h1[\s>]/.test(html)) fail('SSR HTML missing rendered content')
 if (!html.includes('__RQ_STATE__')) fail('SSR HTML missing dehydrated cache script')
 console.log('SSR HTML OK (rendered content + hydration state)')
 
