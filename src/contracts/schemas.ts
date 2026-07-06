@@ -6,3 +6,4 @@ export const errorSchema = z.object({
         "status": z.number().int().describe("HTTP status code"),
         "title": z.string().describe("Short human-readable summary"),
         "type": z.string().describe("A URI reference identifying the problem type")}).describe("RFC 9457 Problem Details error response");
+export type ErrorType = z.infer<typeof errorSchema>;
