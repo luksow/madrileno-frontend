@@ -2,10 +2,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Link, useParams } from 'react-router-dom'
 import { z } from 'zod'
-import { formatInstant } from '../../../api/datetime'
-import { problemTag, type Problem } from '../../../api/problem'
-import { useAuth } from '../../../auth/useAuth'
-import { bidRejection, useAuction, useBids, usePlaceBid, type Auction } from '../api'
+import { formatInstant } from '@/api/datetime'
+import { problemTag, type Problem } from '@/api/problem'
+import { useAuth } from '@/auth/useAuth'
+import {
+  bidRejection,
+  useAuction,
+  useBids,
+  usePlaceBid,
+  type Auction,
+} from '@/features/auctions/api'
 
 function price(amount: number, currency: string): string {
   return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount)

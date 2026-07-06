@@ -1,4 +1,4 @@
-import { env } from '../env'
+import { env } from '@/env'
 
 export async function initRum(): Promise<void> {
   const cfg = env.rum

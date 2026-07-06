@@ -6,8 +6,8 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { ORPCError } from '@orpc/client'
-import { asProblem, type Problem } from '../../api/problem'
-import { orpc, type ApiClient, type OrpcUtils } from '../../api/orpc'
+import { asProblem, type Problem } from '@/api/problem'
+import { orpc, type ApiClient, type OrpcUtils } from '@/api/orpc'
 
 export type AuctionsPage = Awaited<ReturnType<ApiClient['v1']['auctions']['get']>>
 export type AuctionSummary = AuctionsPage['items'][number]

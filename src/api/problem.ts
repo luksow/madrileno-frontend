@@ -1,4 +1,4 @@
-import { errorSchema, type ErrorType } from '../contracts/schemas'
+import { errorSchema, type ErrorType } from '@/contracts/schemas'
 
 // RFC 9457 Problem Details; dispatch on `type`, never on the human-readable text.
 export type Problem = ErrorType

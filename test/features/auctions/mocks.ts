@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw'
-import type { Problem } from '../../../src/api/problem'
-import type { Auction, AuctionsPage, BidsPage } from '../../../src/features/auctions/api'
+import type { Problem } from '@/api/problem'
+import type { Auction, AuctionsPage, BidsPage } from '@/features/auctions/api'
 
 export const AUCTION_ID = '019ed9bb-0000-7000-8000-000000000001'
 

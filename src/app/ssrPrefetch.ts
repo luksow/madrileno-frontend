@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 // frontend:auction-block-start
-import { prefetchAuctionsForUrl } from '../features/auctions/prefetch'
+import { prefetchAuctionsForUrl } from '@/features/auctions/prefetch'
 // frontend:auction-block-end
 
 export type Prefetcher = (

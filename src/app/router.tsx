@@ -1,8 +1,8 @@
 import { useRoutes, type RouteObject } from 'react-router-dom'
-import { LoginPage } from '../auth/LoginPage'
+import { LoginPage } from '@/auth/LoginPage'
 import { NotFound } from './NotFound'
 // frontend:auction-block-start
-import { auctionRoutes } from '../features/auctions/routes'
+import { auctionRoutes } from '@/features/auctions/routes'
 // frontend:auction-block-end
 
 const routes: RouteObject[] = [

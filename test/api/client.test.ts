@@ -1,8 +1,8 @@
 import { http, HttpResponse } from 'msw'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { registerAuthTokenProvider, tokenStore } from '../../src/auth/tokenStore'
+import { registerAuthTokenProvider, tokenStore } from '@/auth/tokenStore'
 import { server } from '../mswServer'
-import { makeApiClient } from '../../src/api/orpc'
+import { makeApiClient } from '@/api/orpc'
 
 const BASE = 'http://api.test'
 const USER = { id: '019ed9bb-0000-7000-8000-000000000042', emailVerified: true }

@@ -1,4 +1,4 @@
-import { setTokenProvider } from '../api/client'
+import { setTokenProvider } from '@/api/client'
 
 const STORAGE_KEY = 'madrileno.tokens'
 
