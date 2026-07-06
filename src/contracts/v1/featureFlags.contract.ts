@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
 import { errorSchema } from "../schemas";
+import { clientFlagsDtoSchema } from "./featureFlags.schemas";
 
 export const v1FeatureFlags = {
   get: oc
@@ -13,8 +14,7 @@ export const v1FeatureFlags = {
       successStatus: 200,
       inputStructure: 'detailed'
     })
-    .output(z.object({
-        "flags": z.record(z.string(), z.object({}))}))
+    .output(clientFlagsDtoSchema)
     .errors({
       'rejection:authentication-failed': {
         status: 401,

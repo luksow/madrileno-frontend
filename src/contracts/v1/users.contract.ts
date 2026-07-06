@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { oc } from "@orpc/contract";
+import { userDtoSchema } from "./users.schemas";
 
 export const v1Users = {
   me: {
@@ -13,11 +13,6 @@ export const v1Users = {
         successStatus: 200,
         inputStructure: 'detailed'
       })
-      .output(z.object({
-          "avatarUrl": z.string().nullish(),
-          "emailAddress": z.string().nullish(),
-          "emailVerified": z.boolean(),
-          "fullName": z.string().nullish(),
-          "id": z.uuid()}))
+      .output(userDtoSchema)
   }
 };

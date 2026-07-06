@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
 import { errorSchema } from "./schemas";
-import { createFlagRequestSchema, createSegmentRequestSchema, depCheckSchema, evaluateFlagRequestSchema, featureFlagDtoSchema, featureFlagDtoSchema4496, loggerLevelDtoSchema, segmentDtoSchema, setLoggerLevelRequestSchema, toggleFlagRequestSchema, updateFlagRequestSchema, updateSegmentRequestSchema } from "./admin.schemas";
+import { adminHealthCheckDtoSchema, createFlagRequestSchema, createSegmentRequestSchema, evaluateFlagRequestSchema, evaluationResultDtoSchema, featureFlagDtoSchema, heapdumpResultDtoSchema, loggerLevelDtoSchema, pageSchema, segmentDtoSchema, setLoggerLevelRequestSchema, toggleFlagRequestSchema, updateFlagRequestSchema, updateSegmentRequestSchema } from "./admin.schemas";
 
 export const admin = {
   config: {
@@ -110,7 +110,7 @@ export const admin = {
         successStatus: 200,
         inputStructure: 'detailed'
       })
-      .output(z.array(featureFlagDtoSchema4496))
+      .output(z.array(featureFlagDtoSchema))
       .errors({
         'rejection:authentication-failed': {
           status: 401,
@@ -130,7 +130,7 @@ export const admin = {
       .input(z.object({
         body: createFlagRequestSchema
       }))
-      .output(featureFlagDtoSchema4496)
+      .output(featureFlagDtoSchema)
       .errors({
         'result:flag-invalid': {
           status: 400,
@@ -175,7 +175,7 @@ export const admin = {
         .input(z.object({
           params: z.object({key: z.string()})
         }))
-        .output(featureFlagDtoSchema4496)
+        .output(featureFlagDtoSchema)
         .errors({
           'result:flag-not-found': {
             status: 404,
@@ -196,7 +196,7 @@ export const admin = {
           params: z.object({key: z.string()}),
           body: updateFlagRequestSchema
         }))
-        .output(featureFlagDtoSchema4496)
+        .output(featureFlagDtoSchema)
         .errors({
           'result:flag-not-found': {
             status: 404,
@@ -218,19 +218,7 @@ export const admin = {
             params: z.object({key: z.string()}),
             query: z.object({"sort-by": z.enum(["CreatedAt"]).nullish(), "sort-dir": z.enum(["Asc","Desc"]).nullish(), limit: z.number().int().nullish(), offset: z.number().int().nullish()}).optional()
           }))
-          .output(z.object({
-              "items": z.array(z.object({
-              "action": z.enum(["Created","Deleted","Toggled","Updated"]),
-              "actor": z.string(),
-              "after": featureFlagDtoSchema.nullish(),
-              "before": featureFlagDtoSchema.nullish(),
-              "createdAt": z.iso.datetime({ offset: true }),
-              "flagId": z.uuid().nullish(),
-              "flagKey": z.string(),
-              "id": z.uuid()})),
-              "limit": z.number().int(),
-              "offset": z.number().int(),
-              "total": z.number().int()}))
+          .output(pageSchema)
       },
       evaluate: {
         post: oc
@@ -247,9 +235,7 @@ export const admin = {
             params: z.object({key: z.string()}),
             body: evaluateFlagRequestSchema
           }))
-          .output(z.object({
-              "reason": z.enum(["Default","Disabled","Error","Split","TargetingMatch"]),
-              "value": z.object({})}))
+          .output(evaluationResultDtoSchema)
           .errors({
             'result:flag-not-found': {
               status: 404,
@@ -272,7 +258,7 @@ export const admin = {
             params: z.object({key: z.string()}),
             body: toggleFlagRequestSchema
           }))
-          .output(featureFlagDtoSchema4496)
+          .output(featureFlagDtoSchema)
           .errors({
             'result:flag-not-found': {
               status: 404,
@@ -293,10 +279,7 @@ export const admin = {
         successStatus: 200,
         inputStructure: 'detailed'
       })
-      .output(z.object({
-          "postgres": depCheckSchema,
-          "smtp": depCheckSchema,
-          "status": z.enum(["Down","Up"])}))
+      .output(adminHealthCheckDtoSchema)
       .errors({
         'rejection:authentication-failed': {
           status: 401,
@@ -318,11 +301,7 @@ export const admin = {
       .input(z.object({
         query: z.object({live: z.boolean().nullish(), path: z.string().nullish()}).optional()
       }))
-      .output(z.object({
-          "liveOnly": z.boolean(),
-          "path": z.string(),
-          "sizeBytes": z.number().int(),
-          "tookMillis": z.number().int()}))
+      .output(heapdumpResultDtoSchema)
       .errors({
         'rejection:authentication-failed': {
           status: 401,

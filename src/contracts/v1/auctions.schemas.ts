@@ -1,5 +1,21 @@
 import { z } from "zod";
 
+export const bidDtoSchema = z.object({
+        "amount": z.number(),
+        "auctionId": z.uuid(),
+        "bidderId": z.uuid(),
+        "createdAt": z.iso.datetime({ offset: true }),
+        "id": z.uuid()});
+export type BidDto = z.infer<typeof bidDtoSchema>;
+
+export const bidHistoryEntryDtoSchema = z.object({
+        "amount": z.number(),
+        "bidderRef": z.string(),
+        "createdAt": z.iso.datetime({ offset: true }),
+        "currency": z.string(),
+        "id": z.uuid()});
+export type BidHistoryEntryDto = z.infer<typeof bidHistoryEntryDtoSchema>;
+
 export const createAuctionRequestSchema = z.object({
         "appellation": z.string(),
         "bottleCount": z.number().int(),
@@ -72,9 +88,14 @@ export const auctionImageDtoSchema = z.object({
         "width": z.number().int().nullish()});
 export type AuctionImageDto = z.infer<typeof auctionImageDtoSchema>;
 
-export const pageSchema = z.object({
+export const cursorSchema = z.object({
+        "hasMore": z.boolean(),
+        "items": z.array(bidHistoryEntryDtoSchema)});
+export type Cursor = z.infer<typeof cursorSchema>;
+
+export const pageSchema2a79 = z.object({
         "items": z.array(auctionDtoSchema),
         "limit": z.number().int(),
         "offset": z.number().int(),
         "total": z.number().int()});
-export type Page = z.infer<typeof pageSchema>;
+export type Page2a79 = z.infer<typeof pageSchema2a79>;

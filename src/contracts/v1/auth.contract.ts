@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
 import { errorSchema } from "../schemas";
-import { authWithEmailRequestSchema, authWithFirebaseRequestSchema, authWithOidcRequestSchema, authWithRefreshTokenRequestSchema, authenticatedResponseSchema } from "./auth.schemas";
+import { authWithEmailRequestSchema, authWithFirebaseRequestSchema, authWithOidcRequestSchema, authWithRefreshTokenRequestSchema, authenticatedResponseSchema, refreshTokenDtoSchema } from "./auth.schemas";
 
 export const v1Auth = {
   dev: {
@@ -128,12 +128,7 @@ export const v1Auth = {
         successStatus: 200,
         inputStructure: 'detailed'
       })
-      .output(z.array(z.object({
-          "createdAt": z.iso.datetime({ offset: true }),
-          "expiresAt": z.iso.datetime({ offset: true }).nullish(),
-          "id": z.uuid(),
-          "ipAddress": z.string(),
-          "userAgent": z.string()}))),
+      .output(z.array(refreshTokenDtoSchema)),
     bySessionId: {
       delete: oc
         .route({

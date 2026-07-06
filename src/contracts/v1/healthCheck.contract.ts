@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { oc } from "@orpc/contract";
+import { healthCheckDtoSchema } from "./healthCheck.schemas";
 
 export const v1HealthCheck = {
   get: oc
@@ -12,9 +12,5 @@ export const v1HealthCheck = {
       successStatus: 200,
       inputStructure: 'detailed'
     })
-    .output(z.object({
-        "apiVersion": z.string(),
-        "environment": z.enum(["Dev","Prod","Staging","Test"]),
-        "name": z.string(),
-        "version": z.string()}))
+    .output(healthCheckDtoSchema)
 };

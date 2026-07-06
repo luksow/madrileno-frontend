@@ -21,3 +21,11 @@ export const authenticatedResponseSchema = z.object({
         "refreshToken": z.uuid(),
         "userCreated": z.boolean()});
 export type AuthenticatedResponse = z.infer<typeof authenticatedResponseSchema>;
+
+export const refreshTokenDtoSchema = z.object({
+        "createdAt": z.iso.datetime({ offset: true }),
+        "expiresAt": z.iso.datetime({ offset: true }).nullish(),
+        "id": z.uuid(),
+        "ipAddress": z.string(),
+        "userAgent": z.string()});
+export type RefreshTokenDto = z.infer<typeof refreshTokenDtoSchema>;

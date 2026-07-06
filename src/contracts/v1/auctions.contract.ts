@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { oc } from "@orpc/contract";
 import { errorSchema } from "../schemas";
-import { auctionDtoSchema, auctionImageDtoSchema, createAuctionRequestSchema, pageSchema, placeBidRequestSchema, reorderImagesRequestSchema } from "./auctions.schemas";
+import { auctionDtoSchema, auctionImageDtoSchema, bidDtoSchema, createAuctionRequestSchema, cursorSchema, pageSchema2a79, placeBidRequestSchema, reorderImagesRequestSchema } from "./auctions.schemas";
 
 export const v1Auctions = {
   get: oc
@@ -17,7 +17,7 @@ export const v1Auctions = {
     .input(z.object({
       query: z.object({status: z.enum(["Cancelled","Closed","Open"]).nullish(), "seller-id": z.uuid().nullish(), "sort-by": z.enum(["CreatedAt","EndsAt","StartingPrice"]).nullish(), "sort-dir": z.enum(["Asc","Desc"]).nullish(), limit: z.number().int().nullish(), offset: z.number().int().nullish()}).optional()
     }))
-    .output(pageSchema),
+    .output(pageSchema2a79),
   post: oc
     .route({
       method: 'POST',
@@ -102,14 +102,7 @@ export const v1Auctions = {
           params: z.object({auctionId: z.uuid()}),
           query: z.object({limit: z.number().int().nullish(), "after-id": z.uuid().nullish()}).optional()
         }))
-        .output(z.object({
-            "hasMore": z.boolean(),
-            "items": z.array(z.object({
-            "amount": z.number(),
-            "bidderRef": z.string(),
-            "createdAt": z.iso.datetime({ offset: true }),
-            "currency": z.string(),
-            "id": z.uuid()}))}))
+        .output(cursorSchema)
         .errors({
           'result:auction-not-found': {
             status: 404,
@@ -130,12 +123,7 @@ export const v1Auctions = {
           params: z.object({auctionId: z.uuid()}),
           body: placeBidRequestSchema
         }))
-        .output(z.object({
-            "amount": z.number(),
-            "auctionId": z.uuid(),
-            "bidderId": z.uuid(),
-            "createdAt": z.iso.datetime({ offset: true }),
-            "id": z.uuid()}))
+        .output(bidDtoSchema)
         .errors({
           'result:already-highest-bidder': {
             status: 409,
