@@ -30,6 +30,6 @@ fs.writeFileSync(
   path.join(dest, 'GENERATED.md'),
   '# Generated — do not edit\n\nVendored from the backend oRPC contract' +
     ' (`target/baklava/orpc/src`, produced by `sbt test`).\n' +
-    'Refresh with `npm run sync-contracts`.\n',
+    'Refresh with `pnpm run sync-contracts`.\n',
 )
 console.log(`Synced ${files.length} contract file(s): ${source} -> ${dest}`)

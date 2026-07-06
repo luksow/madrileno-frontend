@@ -15,16 +15,16 @@ component framework — plain CSS; bring your own design system.
 
 ```
 Scala router specs ──sbt test──▶ target/baklava/orpc/src/*.ts
-                                        │  npm run sync-contracts
+                                        │  pnpm run sync-contracts
                                         ▼
                               src/contracts/ (vendored, committed)
                                         │  typed clients + hooks
                                         ▼
-                         npm run typecheck  ← fails on contract drift
+                         pnpm run typecheck  ← fails on contract drift
 ```
 
-Rename a field in a backend DTO, run `sbt test` + `npm run sync-contracts`,
-and `npm run typecheck` fails at the exact frontend call site. The contract is
+Rename a field in a backend DTO, run `sbt test` + `pnpm run sync-contracts`,
+and `pnpm run typecheck` fails at the exact frontend call site. The contract is
 committed, so CI and fresh clones need no backend checkout.
 
 ## Quick start
@@ -33,8 +33,8 @@ You need Node 22+ (Node ≥20.19 works) and the backend running
 ([backend README](../madrileno)):
 
 ```bash
-npm install
-npm run dev          # SPA on http://localhost:5173, /v1 proxied to :9000
+pnpm install
+pnpm run dev          # SPA on http://localhost:5173, /v1 proxied to :9000
 ```
 
 The Vite proxy makes API calls same-origin, so the backend needs **no CORS
@@ -45,13 +45,13 @@ Refreshing the contract after backend changes:
 
 ```bash
 (cd ../madrileno && sbt test)   # regenerates target/baklava/orpc
-npm run sync-contracts
-npm run typecheck               # surfaces any drift as compile errors
+pnpm run sync-contracts
+pnpm run typecheck               # surfaces any drift as compile errors
 ```
 
 ## SPA by default, SSR when you want it
 
-`npm run dev` / `npm run build` is a plain SPA — static files, any web server.
+`pnpm run dev` / `pnpm run build` is a plain SPA — static files, any web server.
 That's the default and the cheapest thing to operate.
 
 The **SSR opt-in** (`server.js` + `src/app/entry-server.tsx`) server-renders
@@ -59,8 +59,8 @@ the _public_ pages — auction list and detail/bids — with TanStack Query
 prefetch + dehydrate, streaming the HTML and hydrating on the client:
 
 ```bash
-npm run dev:ssr                       # dev SSR (Vite middleware mode)
-npm run build:ssr && npm run preview:ssr   # production SSR
+pnpm run dev:ssr                       # dev SSR (Vite middleware mode)
+pnpm run build:ssr && pnpm run preview:ssr   # production SSR
 curl -s localhost:5173 | grep card    # server-rendered auction HTML
 ```
 
@@ -79,7 +79,7 @@ Design notes:
 
 ## Production
 
-- **SPA**: `npm run build`, serve `dist/`. Set `VITE_API_BASE_URL` to the API
+- **SPA**: `pnpm run build`, serve `dist/`. Set `VITE_API_BASE_URL` to the API
   origin at build time and add that frontend origin to the backend's
   `CORS_ALLOWED_ORIGINS`.
 - **SSR**: `docker build .` (multi-stage, healthcheck on `/healthz`), run with

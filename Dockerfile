@@ -1,17 +1,19 @@
 # SSR-mode image. Only needed if you deploy the opt-in SSR server; the default
-# SPA build (`npm run build`) is static files for any web server / CDN.
+# SPA build (`pnpm run build`) is static files for any web server / CDN.
 FROM node:22-alpine AS build
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
+RUN corepack enable
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 COPY . .
-RUN npm run build:ssr
+RUN pnpm run build:ssr
 
 FROM node:22-alpine
 ENV NODE_ENV=production
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN corepack enable
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile --prod && pnpm store prune
 COPY --from=build /app/dist ./dist
 COPY server.js ./
 EXPOSE 5173

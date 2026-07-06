@@ -10,22 +10,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       # The contract is vendored (src/contracts), so CI needs no backend.
-      - run: npm run typecheck
-      - run: npm run lint
-      - run: npm run format:check
-      - run: npm run test
-      - run: npm run build
-      - run: npm run build:ssr
+      - run: pnpm run typecheck
+      - run: pnpm run lint
+      - run: pnpm run format:check
+      - run: pnpm run test
+      - run: pnpm run build
+      - run: pnpm run build:ssr
       # The demo-agnostic shell smoke needs no backend: '/' streams with the
       # prefetch failure swallowed, so SSR + hydration wiring is still exercised.
-      - run: npx playwright install --with-deps chromium
-      - run: npx playwright test e2e/smoke.spec.ts
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright test e2e/smoke.spec.ts
 
   # The post-init shell must stay green: run init-project on the workspace
   # (throwaway in CI) and put the slimmed tree through the same gate.
@@ -33,18 +34,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - run: node scripts/init-project.mjs ci-shell
-      - run: npm run typecheck
-      - run: npm run lint
-      - run: npm run test
-      - run: npm run build
-      - run: npm run build:ssr
+      - run: pnpm run typecheck
+      - run: pnpm run lint
+      - run: pnpm run test
+      - run: pnpm run build
+      - run: pnpm run build:ssr
       # Only the shell smoke survives init (auctions.spec.ts is deleted); it
       # runs backend-free, so the post-init e2e promise is gated here.
-      - run: npx playwright install --with-deps chromium
-      - run: npx playwright test
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright test
