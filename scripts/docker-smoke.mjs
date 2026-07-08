@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // Build the SSR image and verify the container: /healthz, SSR HTML, HEALTHCHECK.
-// Needs the backend on :9000. Usage: pnpm run smoke:docker
+// Backend-independent: SSR renders the shell even when the API is unreachable
+// (prefetch failures are swallowed), so this checks the container / SSR / hydration
+// wiring without a running backend. Usage: pnpm run smoke:docker
 import { execSync, spawnSync } from 'node:child_process'
 
 const IMAGE = 'madrileno-frontend:smoke'

@@ -1,6 +1,22 @@
 import { expect, test } from '@playwright/test'
 
-const API = 'http://localhost:9000'
+const API = process.env.API_BASE_URL ?? 'http://localhost:9000'
+
+// These demo flows drive the real backend (dev auth + a seeded auction), unlike
+// the backend-free smoke suite. Fail fast with an actionable message instead of a
+// cryptic ECONNREFUSED deep inside a test when the API isn't up.
+test.beforeAll(async () => {
+  const hint = `cd ../madrileno && docker compose up -d && sbt reStart`
+  try {
+    const res = await fetch(`${API}/v1/health-check`)
+    if (!res.ok) throw new Error(`health-check returned ${res.status}`)
+  } catch (cause) {
+    throw new Error(
+      `Backend not reachable at ${API} (${(cause as Error).message}). ` +
+        `The auction e2e tests need it running with dev auth and a seeded auction — start it with: ${hint}`,
+    )
+  }
+})
 
 test('server renders the public auction list (raw HTML, no JS)', async ({ request }) => {
   const res = await request.get('/')
