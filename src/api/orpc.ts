@@ -1,7 +1,7 @@
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import { createContractsClient, type ContractsClient } from '@/contracts/client'
 import { env } from '@/env'
-import { makeAuthorizedFetch } from './client'
+import { makeAuthorizedFetch } from './authFetch'
 
 export type ApiClient = ContractsClient
 

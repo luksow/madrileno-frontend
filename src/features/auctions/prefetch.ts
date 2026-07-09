@@ -1,7 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { matchPath } from 'react-router-dom'
 import { makeOrpcUtils } from '@/api/orpc'
-import { bidsInfiniteOptions, PAGE_SIZE } from './api'
+import { bidsInfiniteOptions, PAGE_SIZE } from './queries'
 
 // prefetch* swallows failures: if the backend is down the page still streams.
 export async function prefetchAuctionsForUrl(

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { formatInstant } from '@/api/datetime'
-import { PAGE_SIZE, useAuctionsPage, type AuctionSummary } from '@/features/auctions/api'
+import { PAGE_SIZE, useAuctionsPage, type AuctionSummary } from '@/features/auctions/queries'
 
 function price(amount: number, currency: string): string {
   return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount)

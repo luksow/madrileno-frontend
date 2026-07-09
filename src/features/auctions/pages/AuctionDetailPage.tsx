@@ -11,7 +11,7 @@ import {
   useBids,
   usePlaceBid,
   type Auction,
-} from '@/features/auctions/api'
+} from '@/features/auctions/queries'
 
 function price(amount: number, currency: string): string {
   return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount)
