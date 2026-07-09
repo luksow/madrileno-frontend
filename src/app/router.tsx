@@ -1,5 +1,5 @@
 import { useRoutes, type RouteObject } from 'react-router-dom'
-import { LoginPage } from '@/auth/LoginPage'
+import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { NotFound } from './NotFound'
 // frontend:auction-block-start
 import { auctionRoutes } from '@/features/auctions/routes'

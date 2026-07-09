@@ -2,7 +2,7 @@ import { HydrationBoundary, QueryClientProvider, type DehydratedState } from '@t
 import { StrictMode } from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
-import { registerAuthTokenProvider } from '@/auth/tokenStore'
+import { registerAuthTokenProvider } from '@/features/auth/tokenStore'
 import { initRum } from '@/observability/rum'
 import '../styles/index.css'
 import { App } from './App'

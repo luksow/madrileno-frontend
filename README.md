@@ -109,8 +109,10 @@ to the backend traces. Unset = the SDK never loads (it's a lazy chunk).
 - **Temporal, not Date**: ESLint bans the `Date` global everywhere except
   `src/api/datetime.ts`, the wire boundary that converts ISO strings to
   `Temporal`.
-- **Feature folders**: `src/features/<name>/` holds api hooks, pages, mocks,
-  tests. The shell (`src/app/`, `src/auth/`, `src/api/`) stays feature-free.
+- **Feature folders**: `src/features/<name>/` holds vertical slices (api hooks,
+  pages, state) — `auth` is one, `auctions` is the deletable demo. The shell
+  (`src/app/`, `src/api/`, `src/observability/`) stays feature-free; `init-project`
+  strips only the `auctions` feature, so `auth` survives.
 - **MSW handlers are typed against the contract** — the frontend's echo of the
   backend's router specs.
 

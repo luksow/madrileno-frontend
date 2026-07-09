@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { z } from 'zod'
 import { formatInstant } from '@/api/datetime'
 import { problemTag, type Problem } from '@/api/problem'
-import { useAuth } from '@/auth/useAuth'
+import { useAuth } from '@/features/auth/useAuth'
 import {
   bidRejection,
   useAuction,

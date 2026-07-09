@@ -21,10 +21,10 @@ madrileno backend template (sibling repo `../madrileno`).
 # Structure
 
 - `src/app/` — shell: entries (SPA hydrate-or-render + SSR), router, layout,
-  query client. `src/features/<name>/` — one folder per feature (api hooks,
-  pages, mocks, tests). `src/api/` — oRPC client (OpenAPILink with a custom
-  RFC 9457 Problem decoder) over an auth-aware fetch (bearer + 401-refresh),
-  datetime boundary.
+  query client. `src/features/<name>/` — one folder per vertical slice (api
+  hooks, pages, state); `auth` is a surviving feature, `auctions` the deletable
+  demo. `src/api/` — oRPC client (OpenAPILink with a custom RFC 9457 Problem
+  decoder) over an auth-aware fetch (bearer + 401-refresh), datetime boundary.
 - New API calls: use the tanstack utils `orpc` from `src/api/orpc.ts`
   (`useQuery(orpc['<generated-key>'].get.queryOptions({ input }))`); plain
   one-shot calls go through `client` from the same module. Infer types from

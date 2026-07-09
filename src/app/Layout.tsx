@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '@/auth/useAuth'
+import { useAuth } from '@/features/auth/useAuth'
 
 export function Layout({ children }: { children: ReactNode }) {
   const { tokens, logout } = useAuth()

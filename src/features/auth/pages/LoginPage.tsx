@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { client } from '@/api/orpc'
 import { asProblem, type Problem } from '@/api/problem'
-import { tokenStore } from './tokenStore'
+import { tokenStore } from '@/features/auth/tokenStore'
 
 const loginSchema = z.object({ email: z.string().email('Enter a valid email address') })
 type LoginForm = z.infer<typeof loginSchema>

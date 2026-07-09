@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { registerAuthTokenProvider, tokenStore } from '@/auth/tokenStore'
+import { registerAuthTokenProvider, tokenStore } from '@/features/auth/tokenStore'
 import { server } from '../mswServer'
 import { makeApiClient } from '@/api/orpc'
 
