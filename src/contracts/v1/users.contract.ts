@@ -11,7 +11,8 @@ export const v1Users = {
         description: 'Get the authenticated user\'s profile',
         tags: ['Users'],
         successStatus: 200,
-        inputStructure: 'detailed'
+        inputStructure: 'detailed',
+        spec: (current) => ({ ...current, security: [{ bearer: [] }] })
       })
       .output(userDtoSchema)
   }

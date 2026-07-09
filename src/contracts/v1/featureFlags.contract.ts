@@ -12,7 +12,8 @@ export const v1FeatureFlags = {
       description: 'Bootstrap payload for clients: every client-exposed flag evaluated against the authenticated user (targeting key = user id). Flags not marked client-exposed are never present in the response.',
       tags: ['Feature flags'],
       successStatus: 200,
-      inputStructure: 'detailed'
+      inputStructure: 'detailed',
+      spec: (current) => ({ ...current, security: [{ bearer: [] }] })
     })
     .output(clientFlagsDtoSchema)
     .errors({

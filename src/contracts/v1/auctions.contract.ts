@@ -26,7 +26,8 @@ export const v1Auctions = {
       description: 'Create a new auction',
       tags: ['Auctions'],
       successStatus: 201,
-      inputStructure: 'detailed'
+      inputStructure: 'detailed',
+      spec: (current) => ({ ...current, security: [{ bearer: [] }] })
     })
     .input(z.object({
       body: createAuctionRequestSchema
@@ -47,7 +48,8 @@ export const v1Auctions = {
         description: 'Cancel an auction',
         tags: ['Auctions'],
         successStatus: 204,
-        inputStructure: 'detailed'
+        inputStructure: 'detailed',
+        spec: (current) => ({ ...current, security: [{ bearer: [] }] })
       })
       .input(z.object({
         params: z.object({auctionId: z.uuid()})
@@ -117,7 +119,8 @@ export const v1Auctions = {
           description: 'Place a bid on an auction',
           tags: ['Auctions'],
           successStatus: 201,
-          inputStructure: 'detailed'
+          inputStructure: 'detailed',
+          spec: (current) => ({ ...current, security: [{ bearer: [] }] })
         })
         .input(z.object({
           params: z.object({auctionId: z.uuid()}),
@@ -174,7 +177,8 @@ export const v1Auctions = {
           description: 'Attach an image to an auction (multipart upload)',
           tags: ['Auction images'],
           successStatus: 201,
-          inputStructure: 'detailed'
+          inputStructure: 'detailed',
+          spec: (current) => ({ ...current, security: [{ bearer: [] }] })
         })
         .input(z.object({
           params: z.object({auctionId: z.uuid()}),
@@ -200,7 +204,8 @@ export const v1Auctions = {
             description: 'Soft-delete an image and remove it from object storage',
             tags: ['Auction images'],
             successStatus: 204,
-            inputStructure: 'detailed'
+            inputStructure: 'detailed',
+            spec: (current) => ({ ...current, security: [{ bearer: [] }] })
           })
           .input(z.object({
             params: z.object({auctionId: z.uuid(), imageId: z.uuid()})
@@ -248,7 +253,8 @@ export const v1Auctions = {
             description: 'Reorder images on an auction (must include every active image id)',
             tags: ['Auction images'],
             successStatus: 204,
-            inputStructure: 'detailed'
+            inputStructure: 'detailed',
+            spec: (current) => ({ ...current, security: [{ bearer: [] }] })
           })
           .input(z.object({
             params: z.object({auctionId: z.uuid()}),

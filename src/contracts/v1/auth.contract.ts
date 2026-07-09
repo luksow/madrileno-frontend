@@ -112,7 +112,8 @@ export const v1Auth = {
         description: 'Revoke sessions by user agent',
         tags: ['Auth'],
         successStatus: 204,
-        inputStructure: 'detailed'
+        inputStructure: 'detailed',
+        spec: (current) => ({ ...current, security: [{ bearer: [] }] })
       })
       .input(z.object({
         query: z.object({"user-agent": z.string()})
@@ -126,7 +127,8 @@ export const v1Auth = {
         description: 'List active sessions. Each entry\'s `createdAt` is when that refresh token was issued — login time, or the timestamp of the last JWT refresh that rotated it (refresh tokens are single-use, so the live one is always the newest in its chain).',
         tags: ['Auth'],
         successStatus: 200,
-        inputStructure: 'detailed'
+        inputStructure: 'detailed',
+        spec: (current) => ({ ...current, security: [{ bearer: [] }] })
       })
       .output(z.array(refreshTokenDtoSchema)),
     bySessionId: {
@@ -138,7 +140,8 @@ export const v1Auth = {
           description: 'Revoke a specific session',
           tags: ['Auth'],
           successStatus: 204,
-          inputStructure: 'detailed'
+          inputStructure: 'detailed',
+          spec: (current) => ({ ...current, security: [{ bearer: [] }] })
         })
         .input(z.object({
           params: z.object({sessionId: z.uuid()})
