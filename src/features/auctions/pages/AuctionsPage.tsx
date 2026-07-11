@@ -47,7 +47,9 @@ export function AuctionsPage() {
       {isError && <p className="text-destructive">Couldn’t load auctions — is the backend up?</p>}
       {page &&
         (page.items.length === 0 ? (
-          <p className="text-muted-foreground">No auctions yet. Log in and create one via the API.</p>
+          <p className="text-muted-foreground">
+            No auctions yet. Log in and create one via the API.
+          </p>
         ) : (
           <>
             <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

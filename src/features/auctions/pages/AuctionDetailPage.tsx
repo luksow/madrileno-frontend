@@ -79,7 +79,9 @@ function PlaceBidForm({ auction }: { auction: Auction }) {
       <Button type="submit" disabled={placeBid.isPending || auction.status !== 'Open'}>
         {placeBid.isPending ? 'Placing…' : 'Place bid'}
       </Button>
-      {rejection !== null && <p className="text-sm text-destructive">{rejectionMessage(rejection)}</p>}
+      {rejection !== null && (
+        <p className="text-sm text-destructive">{rejectionMessage(rejection)}</p>
+      )}
       {placeBid.isError && rejection === null && (
         <p className="text-sm text-destructive">Couldn’t place the bid — try again.</p>
       )}
@@ -114,7 +116,13 @@ function BidHistory({ auctionId }: { auctionId: string }) {
         </ul>
       )}
       {hasNextPage && (
-        <Button variant="outline" size="sm" className="self-start" onClick={() => void fetchNextPage()} disabled={isFetchingNextPage}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="self-start"
+          onClick={() => void fetchNextPage()}
+          disabled={isFetchingNextPage}
+        >
           {isFetchingNextPage ? 'Loading…' : 'Load more bids'}
         </Button>
       )}
@@ -136,7 +144,8 @@ function AuctionDetail({ auctionId }: { auctionId: string }) {
   const price = usePriceFormatter()
 
   if (isPending) return <p className="text-muted-foreground">Loading auction…</p>
-  if (isError) return <p className="text-destructive">Couldn’t load this auction — does it exist?</p>
+  if (isError)
+    return <p className="text-destructive">Couldn’t load this auction — does it exist?</p>
 
   return (
     <section className="flex flex-col gap-4">

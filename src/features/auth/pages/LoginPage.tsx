@@ -51,7 +51,12 @@ export function LoginPage() {
 
       <form onSubmit={(e) => void onSubmit(e)} noValidate className="flex flex-col gap-4">
         <Field label="Email" error={errors.email?.message}>
-          <Input type="email" placeholder="you@example.com" autoComplete="email" {...register('email')} />
+          <Input
+            type="email"
+            placeholder="you@example.com"
+            autoComplete="email"
+            {...register('email')}
+          />
         </Field>
 
         {problem && (

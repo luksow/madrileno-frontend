@@ -2,7 +2,13 @@ import type { ComponentProps } from 'react'
 import { cn } from '@/lib/utils'
 import { useFieldContext } from '@/ui/field'
 
-export function Input({ className, id, 'aria-invalid': ariaInvalid, 'aria-describedby': describedBy, ...props }: ComponentProps<'input'>) {
+export function Input({
+  className,
+  id,
+  'aria-invalid': ariaInvalid,
+  'aria-describedby': describedBy,
+  ...props
+}: ComponentProps<'input'>) {
   // Inside a <Field>, inherit its id + aria wiring; explicit props still win.
   const field = useFieldContext()
   return (
