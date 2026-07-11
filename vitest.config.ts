@@ -1,15 +1,15 @@
-import { fileURLToPath, URL } from 'node:url'
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vitest/config'
+import { defineConfig, mergeConfig } from 'vitest/config'
+import viteConfig from './vite.config'
 
-export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
-  },
-  test: {
-    environment: 'jsdom',
-    setupFiles: ['./test/setup.ts'],
-    include: ['test/**/*.test.{ts,tsx}'],
-  },
-})
+export default mergeConfig(
+  viteConfig,
+  defineConfig({
+    test: {
+      environment: 'jsdom',
+      setupFiles: ['./test/setup.ts'],
+      include: ['test/**/*.test.{ts,tsx}'],
+      // '' would mean same-origin, but Node fetch rejects relative URLs.
+      env: { VITE_API_BASE_URL: 'http://localhost:9000' },
+    },
+  }),
+)

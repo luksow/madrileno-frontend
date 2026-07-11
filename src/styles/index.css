@@ -155,6 +155,7 @@ form input {
   margin-bottom: 0.75rem;
 }
 
+/* frontend:auction-block-start */
 .bid-form {
   max-width: 20rem;
   margin: 1rem 0;
@@ -173,3 +174,4 @@ form input {
   padding: 0.4rem 0;
   border-bottom: 1px solid var(--border);
 }
+/* frontend:auction-block-end */

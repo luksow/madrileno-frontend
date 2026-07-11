@@ -41,13 +41,20 @@ if (!isProduction) {
       })
       res.status(upstream.status)
       upstream.headers.forEach((value, key) => {
-        // fetch already decompressed the body; hop-by-hop headers must not be forwarded.
+        // fetch already decompressed the body; hop-by-hop headers must not be
+        // forwarded; Set-Cookie can repeat and setHeader would clobber it.
         if (
-          !['content-encoding', 'content-length', 'transfer-encoding', 'connection'].includes(key)
+          !['content-encoding', 'content-length', 'transfer-encoding', 'connection'].includes(
+            key,
+          ) &&
+          key !== 'set-cookie'
         ) {
           res.setHeader(key, value)
         }
       })
+      for (const cookie of upstream.headers.getSetCookie()) {
+        res.append('set-cookie', cookie)
+      }
       if (upstream.body) Readable.fromWeb(upstream.body).pipe(res)
       else res.end()
     } catch (e) {
@@ -66,6 +73,13 @@ app.get('/healthz', (_req, res) => {
 app.use('*all', async (req, res) => {
   try {
     const url = req.originalUrl
+
+    // Anything with a file extension that reached us missed the static
+    // handlers above — 404 instead of SSR-rendering HTML for it.
+    if (/\.\w+$/.test(new URL(url, 'http://localhost').pathname)) {
+      res.status(404).end()
+      return
+    }
 
     /** @type {string} */
     let template
@@ -100,19 +114,27 @@ app.use('*all', async (req, res) => {
         callback()
       },
     })
+    const abortTimer = setTimeout(() => abort(), ABORT_DELAY)
     transformStream.on('finish', () => {
+      clearTimeout(abortTimer)
       res.write(stateScript)
       res.end(htmlEnd)
+    })
+    // Client went away mid-stream: stop rendering for nobody.
+    res.on('close', () => {
+      clearTimeout(abortTimer)
+      if (!res.writableEnded) abort()
     })
 
     res.write(htmlStart)
     pipe(transformStream)
-
-    setTimeout(() => abort(), ABORT_DELAY)
   } catch (e) {
-    vite?.ssrFixStacktrace(e)
-    console.log(e.stack)
-    res.status(500).end(e.stack)
+    if (e instanceof Error) vite?.ssrFixStacktrace(e)
+    console.error(e)
+    res.status(500)
+    // Stack traces reveal server internals — never send them to production visitors.
+    if (isProduction) res.end('Internal Server Error')
+    else res.end(e instanceof Error ? e.stack : String(e))
   }
 })
 

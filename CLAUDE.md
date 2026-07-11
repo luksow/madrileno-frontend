@@ -4,11 +4,11 @@ madrileno backend template (sibling repo `../madrileno`).
 # Ground rules
 
 - The API contract in `src/contracts/` is GENERATED — never edit it. Refresh it
-  with `npm run sync-contracts` after the backend's `sbt test`. If typecheck
+  with `pnpm run sync-contracts` after the backend's `sbt test`. If typecheck
   breaks after a sync, fix the call sites: the backend routes are the source of
   truth.
-- ALWAYS run `npm run typecheck`, `npm run lint`, and `npm run test` before
-  committing; format with `npm run format`.
+- ALWAYS run `pnpm run typecheck`, `pnpm run lint`, and `pnpm run test` before
+  committing; format with `pnpm run format`.
 - NEVER use the JS `Date` global outside `src/api/datetime.ts` (ESLint enforces
   this). Use `Temporal` from `temporal-polyfill`; convert wire values at the
   boundary with `toInstant` / `formatInstant`.
@@ -38,7 +38,7 @@ madrileno backend template (sibling repo `../madrileno`).
 
 # Modes
 
-- `npm run dev` — SPA + Vite proxy (default). `npm run dev:ssr` — streaming SSR
+- `pnpm run dev` — SPA + Vite proxy (default). `pnpm run dev:ssr` — streaming SSR
   of the public pages. SSR renders only unauthenticated routes; the server
   never holds a user token. Keep components SSR-safe: no browser globals during
   render (only in effects/handlers), fetch through TanStack Query.

@@ -15,9 +15,8 @@ export interface RenderResult {
 // Resolves on onShellReady, rejects on shell error — the caller can pipe immediately.
 export async function render(url: string, apiBaseUrl: string): Promise<RenderResult> {
   const queryClient = makeQueryClient()
-  for (const prefetch of ssrPrefetchers) {
-    await prefetch(queryClient, url, apiBaseUrl)
-  }
+  // Prefetchers are independent — pay for the slowest, not the sum.
+  await Promise.all(ssrPrefetchers.map((prefetch) => prefetch(queryClient, url, apiBaseUrl)))
   const dehydratedState = dehydrate(queryClient)
   return new Promise<RenderResult>((resolve, reject) => {
     const { pipe, abort } = renderToPipeableStream(

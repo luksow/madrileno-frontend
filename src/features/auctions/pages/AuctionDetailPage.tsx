@@ -2,20 +2,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Link, useParams } from 'react-router-dom'
 import { z } from 'zod'
-import { formatInstant } from '@/api/datetime'
-import { problemTag, type Problem } from '@/api/problem'
+import { useInstantFormatter } from '@/api/datetime'
+import { problemFrom, problemTag, type Problem } from '@/api/problem'
 import { useAuth } from '@/features/auth/useAuth'
-import {
-  bidRejection,
-  useAuction,
-  useBids,
-  usePlaceBid,
-  type Auction,
-} from '@/features/auctions/queries'
-
-function price(amount: number, currency: string): string {
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount)
-}
+import { usePriceFormatter } from '@/features/auctions/format'
+import { useAuction, useBids, usePlaceBid, type Auction } from '@/features/auctions/queries'
 
 const bidSchema = z.object({
   amount: z.coerce.number().positive('Bid must be a positive amount'),
@@ -65,7 +56,7 @@ function PlaceBidForm({ auction }: { auction: Auction }) {
     )
   })
 
-  const rejection = placeBid.error !== null ? bidRejection(placeBid.error) : null
+  const rejection = placeBid.error !== null ? problemFrom(placeBid.error) : null
 
   return (
     <form onSubmit={(e) => void onSubmit(e)} className="bid-form" noValidate>
@@ -94,6 +85,8 @@ function PlaceBidForm({ auction }: { auction: Auction }) {
 function BidHistory({ auctionId }: { auctionId: string }) {
   const { data, isPending, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useBids(auctionId)
+  const formatInstant = useInstantFormatter()
+  const price = usePriceFormatter()
   if (isPending) return <p className="muted">Loading bids…</p>
   if (isError) return <p className="error">Couldn’t load the bid history.</p>
   const bids = data.pages.flatMap((page) => page.items)
@@ -125,9 +118,17 @@ function BidHistory({ auctionId }: { auctionId: string }) {
 
 export function AuctionDetailPage() {
   const { auctionId } = useParams()
-  const { data: auction, isPending, isError } = useAuction(auctionId ?? '')
-
+  // The '/auctions/:auctionId' route guarantees the param; guarding here keeps
+  // the query below from ever firing with a bogus id.
   if (auctionId === undefined) return <p className="error">Missing auction id.</p>
+  return <AuctionDetail auctionId={auctionId} />
+}
+
+function AuctionDetail({ auctionId }: { auctionId: string }) {
+  const { data: auction, isPending, isError } = useAuction(auctionId)
+  const formatInstant = useInstantFormatter()
+  const price = usePriceFormatter()
+
   if (isPending) return <p className="muted">Loading auction…</p>
   if (isError) return <p className="error">Couldn’t load this auction — does it exist?</p>
 

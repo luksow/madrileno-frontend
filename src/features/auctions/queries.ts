@@ -5,8 +5,6 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
-import { ORPCError } from '@orpc/client'
-import { asProblem, type Problem } from '@/api/problem'
 import { orpc, type ApiClient, type OrpcUtils } from '@/api/orpc'
 
 export type AuctionsPage = Awaited<ReturnType<ApiClient['v1']['auctions']['get']>>
@@ -62,15 +60,9 @@ export function usePlaceBid(auctionId: string) {
           queryKey: auctionRoute.get.key({ input: { params: { auctionId } } }),
         })
         void queryClient.invalidateQueries({
-          queryKey: bidsRoute.get.key(),
+          queryKey: bidsRoute.get.key({ input: { params: { auctionId } } }),
         })
       },
     }),
   )
-}
-
-// isDefinedError spelled out — the guard can't narrow from `unknown`.
-export function bidRejection(error: unknown): Problem | null {
-  if (!(error instanceof ORPCError) || !error.defined) return null
-  return asProblem(error.data)
 }

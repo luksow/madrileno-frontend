@@ -17,16 +17,9 @@ export interface RumConfig {
   applicationId: string
 }
 
-// '' = same-origin (proxied /v1); tests need an absolute URL — Node fetch rejects relative ones.
-const apiBaseUrl =
-  raw.VITE_API_BASE_URL !== ''
-    ? raw.VITE_API_BASE_URL
-    : import.meta.env.MODE === 'test'
-      ? 'http://localhost:9000'
-      : ''
-
 export const env: { apiBaseUrl: string; rum: RumConfig | null } = {
-  apiBaseUrl,
+  // '' = same-origin (proxied /v1). Vitest injects an absolute URL here — see vitest.config.ts.
+  apiBaseUrl: raw.VITE_API_BASE_URL,
   rum:
     raw.VITE_OPENOBSERVE_RUM_CLIENT_TOKEN !== undefined &&
     raw.VITE_OPENOBSERVE_RUM_SITE !== undefined

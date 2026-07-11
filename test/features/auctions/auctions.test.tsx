@@ -7,7 +7,14 @@ import { describe, expect, it } from 'vitest'
 import { tokenStore } from '@/features/auth/tokenStore'
 import { App } from '@/app/App'
 import { server } from '../../mswServer'
-import { AUCTION_ID, bidsPageFixture, bidTooLowProblem, detailHandler, listHandler } from './mocks'
+import {
+  AUCTION_ID,
+  auctionsPageFixture,
+  bidsPageFixture,
+  bidTooLowProblem,
+  detailHandler,
+  listHandler,
+} from './mocks'
 
 function renderApp(path: string) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -26,6 +33,18 @@ describe('auctions list', () => {
     renderApp('/')
     expect(await screen.findByText(/Château Margaux 2015/)).toBeInTheDocument()
     expect(screen.getByText(/1–1 of 1/)).toBeInTheDocument()
+  })
+
+  it('shows the empty state without a pager', async () => {
+    server.use(
+      http.get('*/v1/auctions', () =>
+        HttpResponse.json({ ...auctionsPageFixture, items: [], total: 0 }),
+      ),
+    )
+    renderApp('/')
+    expect(await screen.findByText(/no auctions yet/i)).toBeInTheDocument()
+    expect(screen.queryByText(/of 0/)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /next/i })).not.toBeInTheDocument()
   })
 })
 

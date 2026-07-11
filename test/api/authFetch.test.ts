@@ -78,6 +78,35 @@ describe('the authorized fetch behind the oRPC client', () => {
     expect(tokenStore.get()?.jwt).toBe('fresh-jwt')
   })
 
+  it('keeps the session when the refresh endpoint fails transiently (5xx)', async () => {
+    loggedIn()
+    server.use(
+      usersMe401Until('fresh-jwt'),
+      http.post(`${BASE}/v1/auth/refresh-token`, () =>
+        HttpResponse.json(
+          { type: 'about:blank', status: 502, title: 'Upstream unavailable' },
+          { status: 502 },
+        ),
+      ),
+    )
+
+    // The original 401 surfaces as the request error…
+    await expect(makeApiClient(BASE).v1.users.me.get()).rejects.toThrow()
+    // …but the still-valid refresh token survives the blip.
+    expect(tokenStore.get()?.refreshToken).toBe('11111111-1111-4111-8111-111111111111')
+  })
+
+  it('keeps the session when the refresh request fails at the network level', async () => {
+    loggedIn()
+    server.use(
+      usersMe401Until('fresh-jwt'),
+      http.post(`${BASE}/v1/auth/refresh-token`, () => HttpResponse.error()),
+    )
+
+    await expect(makeApiClient(BASE).v1.users.me.get()).rejects.toThrow()
+    expect(tokenStore.get()?.refreshToken).toBe('11111111-1111-4111-8111-111111111111')
+  })
+
   it('logs out when the refresh token is rejected (the 401 propagates as an error)', async () => {
     loggedIn()
     const reject401 = () =>

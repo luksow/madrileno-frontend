@@ -1,12 +1,18 @@
+import { z } from 'zod'
 import { setTokenProvider } from '@/api/authFetch'
 
 const STORAGE_KEY = 'madrileno.tokens'
 
-export interface Tokens {
-  jwt: string
-  refreshToken: string
-  email: string
-}
+// Validate what comes back out of localStorage: anyone (an older format, a
+// devtools edit) can write under our key, and a wrong shape must read as
+// logged-out, not as a session with undefined fields.
+const tokensSchema = z.object({
+  jwt: z.string(),
+  refreshToken: z.string(),
+  email: z.string(),
+})
+
+export type Tokens = z.infer<typeof tokensSchema>
 
 type Listener = () => void
 
@@ -16,7 +22,9 @@ function load(): Tokens | null {
   if (!isBrowser) return null
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
-    return raw !== null ? (JSON.parse(raw) as Tokens) : null
+    if (raw === null) return null
+    const parsed = tokensSchema.safeParse(JSON.parse(raw))
+    return parsed.success ? parsed.data : null
   } catch {
     return null
   }
@@ -24,6 +32,16 @@ function load(): Tokens | null {
 
 let current: Tokens | null = load()
 const listeners = new Set<Listener>()
+
+// Another tab rotated or dropped the tokens (the refresh token is single-use,
+// so tabs must not act on a stale one) — adopt its write.
+if (isBrowser) {
+  window.addEventListener('storage', (event) => {
+    if (event.key !== STORAGE_KEY && event.key !== null) return
+    current = load()
+    listeners.forEach((listener) => listener())
+  })
+}
 
 // Arrow properties: useSyncExternalStore calls them detached from the object.
 export const tokenStore = {

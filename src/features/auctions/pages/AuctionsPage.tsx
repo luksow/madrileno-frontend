@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { formatInstant } from '@/api/datetime'
+import { useInstantFormatter } from '@/api/datetime'
+import { usePriceFormatter } from '@/features/auctions/format'
 import { PAGE_SIZE, useAuctionsPage, type AuctionSummary } from '@/features/auctions/queries'
 
-function price(amount: number, currency: string): string {
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount)
-}
-
 function AuctionCard({ auction }: { auction: AuctionSummary }) {
+  const formatInstant = useInstantFormatter()
+  const price = usePriceFormatter()
   return (
     <li className="card">
       <Link to={`/auctions/${auction.id}`}>
@@ -43,30 +42,32 @@ export function AuctionsPage() {
           {page.items.length === 0 ? (
             <p className="muted">No auctions yet. Log in and create one via the API.</p>
           ) : (
-            <ul className="card-grid">
-              {page.items.map((auction) => (
-                <AuctionCard key={auction.id} auction={auction} />
-              ))}
-            </ul>
+            <>
+              <ul className="card-grid">
+                {page.items.map((auction) => (
+                  <AuctionCard key={auction.id} auction={auction} />
+                ))}
+              </ul>
+              <nav className="pager">
+                <button
+                  disabled={offset === 0}
+                  onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
+                >
+                  ← Previous
+                </button>
+                <span className="muted">
+                  {String(offset + 1)}–{String(Math.min(offset + PAGE_SIZE, page.total))} of{' '}
+                  {String(page.total)}
+                </span>
+                <button
+                  disabled={offset + PAGE_SIZE >= page.total}
+                  onClick={() => setOffset(offset + PAGE_SIZE)}
+                >
+                  Next →
+                </button>
+              </nav>
+            </>
           )}
-          <nav className="pager">
-            <button
-              disabled={offset === 0}
-              onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
-            >
-              ← Previous
-            </button>
-            <span className="muted">
-              {String(offset + 1)}–{String(Math.min(offset + PAGE_SIZE, page.total))} of{' '}
-              {String(page.total)}
-            </span>
-            <button
-              disabled={offset + PAGE_SIZE >= page.total}
-              onClick={() => setOffset(offset + PAGE_SIZE)}
-            >
-              Next →
-            </button>
-          </nav>
         </>
       )}
     </section>

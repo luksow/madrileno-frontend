@@ -1,11 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ORPCError } from '@orpc/client'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { client } from '@/api/orpc'
-import { asProblem, type Problem } from '@/api/problem'
+import { problemFrom, type Problem } from '@/api/problem'
 import { tokenStore } from '@/features/auth/tokenStore'
 
 const loginSchema = z.object({ email: z.string().email('Enter a valid email address') })
@@ -27,9 +26,12 @@ export function LoginPage() {
       tokenStore.set({ jwt: res.jwt, refreshToken: res.refreshToken, email })
       void navigate('/')
     } catch (error) {
-      const problem = error instanceof ORPCError ? asProblem(error.data) : null
       setProblem(
-        problem ?? { type: 'unknown', status: 0, title: 'Login failed — is the backend up?' },
+        problemFrom(error) ?? {
+          type: 'unknown',
+          status: 0,
+          title: 'Login failed — is the backend up?',
+        },
       )
     }
   })
