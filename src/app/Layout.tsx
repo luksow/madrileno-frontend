@@ -8,6 +8,12 @@ export function Layout({ children }: { children: ReactNode }) {
   const { tokens, logout } = useAuth()
   return (
     <>
+      <a
+        href="#main"
+        className="sr-only rounded-md bg-primary px-3 py-2 text-primary-foreground focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50"
+      >
+        Skip to content
+      </a>
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
           <Link to="/" className="text-lg font-semibold text-primary">
@@ -30,7 +36,9 @@ export function Layout({ children }: { children: ReactNode }) {
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-4xl px-4 py-8">{children}</main>
+      <main id="main" className="mx-auto max-w-4xl px-4 py-8">
+        {children}
+      </main>
     </>
   )
 }
