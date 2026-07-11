@@ -35,6 +35,11 @@ madrileno backend template (sibling repo `../madrileno`).
   `server.use(...)`; type fixtures against contract-inferred types.
 - Blocks bracketed by `// frontend:auction-block-start` / `-end` are demo
   wiring that `scripts/init-project.mjs` strips — keep the markers accurate.
+- UI: compose the primitives in `src/ui/` (`Button`, `Field`, `Input`, `Card`,
+  `Badge`) — don't hand-write raw elements or Tailwind in feature code. Forms
+  go in `<Field label error>` (it wires the label + `aria-invalid`). Style with
+  tokens (`bg-card`, `text-muted-foreground`, …), never hard-coded colors, so
+  dark mode works for free. See `src/ui/README.md`.
 
 # Modes
 

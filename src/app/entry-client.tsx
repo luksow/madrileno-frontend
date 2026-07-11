@@ -4,7 +4,7 @@ import { createRoot, hydrateRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { registerAuthTokenProvider } from '@/features/auth/tokenStore'
 import { initRum } from '@/observability/rum'
-import '../styles/index.css'
+import '../styles/tailwind.css'
 import { App } from './App'
 import { makeQueryClient } from './queryClient'
 

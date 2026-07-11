@@ -45,6 +45,13 @@ export default tseslint.config(
     rules: { 'no-restricted-globals': 'off' },
   },
 
+  // UI primitives export their cva variant helpers alongside the component (shadcn convention);
+  // that's fine here — these files aren't hot-reload-sensitive feature code.
+  {
+    files: ['src/ui/**/*.tsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
+
   {
     files: ['**/*.{js,mjs}'],
     extends: [js.configs.recommended, prettier],

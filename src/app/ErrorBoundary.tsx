@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from 'react'
+import { Button } from '@/ui/button'
 
 interface Props {
   children: ReactNode
@@ -18,10 +19,10 @@ export class ErrorBoundary extends Component<Props, State> {
   override render(): ReactNode {
     if (this.state.error !== null) {
       return (
-        <main className="container">
-          <h1>Something went wrong</h1>
-          <p className="error">{this.state.error.message}</p>
-          <button onClick={() => window.location.assign('/')}>Back to start</button>
+        <main className="mx-auto flex max-w-4xl flex-col items-start gap-4 px-4 py-8">
+          <h1 className="text-2xl font-semibold">Something went wrong</h1>
+          <p className="text-destructive">{this.state.error.message}</p>
+          <Button onClick={() => window.location.assign('/')}>Back to start</Button>
         </main>
       )
     }
