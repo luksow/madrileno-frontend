@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Link, useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import { z } from 'zod'
 import { useInstantFormatter } from '@/api/datetime'
 import { problemFrom, problemTag, type Problem } from '@/api/problem'
@@ -59,11 +60,20 @@ function PlaceBidForm({ auction }: { auction: Auction }) {
   const onSubmit = handleSubmit(({ amount }) => {
     placeBid.mutate(
       { params: { auctionId: auction.id }, body: { amount } },
-      { onSuccess: () => reset() },
+      {
+        onSuccess: () => {
+          reset()
+          toast.success('Bid placed.')
+        },
+        onError: (error) => {
+          const rejection = problemFrom(error)
+          toast.error(
+            rejection ? rejectionMessage(rejection) : 'Couldn’t place the bid — try again.',
+          )
+        },
+      },
     )
   })
-
-  const rejection = placeBid.error !== null ? problemFrom(placeBid.error) : null
 
   return (
     <form onSubmit={(e) => void onSubmit(e)} className="flex max-w-xs flex-col gap-3" noValidate>
@@ -83,13 +93,6 @@ function PlaceBidForm({ auction }: { auction: Auction }) {
       <Button type="submit" disabled={placeBid.isPending || auction.status !== 'Open'}>
         {placeBid.isPending ? 'Placing…' : 'Place bid'}
       </Button>
-      {rejection !== null && (
-        <p className="text-sm text-destructive">{rejectionMessage(rejection)}</p>
-      )}
-      {placeBid.isError && rejection === null && (
-        <p className="text-sm text-destructive">Couldn’t place the bid — try again.</p>
-      )}
-      {placeBid.isSuccess && <p className="text-sm text-primary">Bid placed.</p>}
     </form>
   )
 }
