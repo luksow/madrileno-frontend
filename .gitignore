@@ -28,3 +28,6 @@ dist-ssr
 test-results
 playwright-report
 coverage
+
+# vite-plugin-pwa dev service worker output
+dev-dist
