@@ -4,8 +4,8 @@ export type Theme = 'light' | 'dark'
 const STORAGE_KEY = 'theme'
 
 // Source of truth is the `.dark` class on <html>, set before paint by the inline script in
-// index.html (so there's no flash). We read it through useSyncExternalStore — SSR-safe (the server
-// snapshot is 'light') and free of the setState-in-effect antipattern.
+// index.html (so there's no flash). Read through useSyncExternalStore — SSR-safe (server snapshot
+// is 'light') and free of the setState-in-effect antipattern.
 const listeners = new Set<() => void>()
 
 function currentTheme(): Theme {

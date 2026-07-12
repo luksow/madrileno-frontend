@@ -6,9 +6,9 @@ import { z } from 'zod'
 import { client } from '@/api/orpc'
 import { problemFrom, type Problem } from '@/api/problem'
 import { tokenStore } from '@/features/auth/tokenStore'
-import { Button } from '@/ui/button'
-import { Field } from '@/ui/field'
-import { Input } from '@/ui/input'
+import { Button } from '@/components/ui/button'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
 
 const loginSchema = z.object({ email: z.string().email('Enter a valid email address') })
 type LoginForm = z.infer<typeof loginSchema>
@@ -50,13 +50,17 @@ export function LoginPage() {
       </header>
 
       <form onSubmit={(e) => void onSubmit(e)} noValidate className="flex flex-col gap-4">
-        <Field label="Email" error={errors.email?.message}>
+        <Field data-invalid={errors.email !== undefined}>
+          <FieldLabel htmlFor="email">Email</FieldLabel>
           <Input
+            id="email"
             type="email"
             placeholder="you@example.com"
             autoComplete="email"
+            aria-invalid={errors.email !== undefined}
             {...register('email')}
           />
+          {errors.email && <FieldError>{errors.email.message}</FieldError>}
         </Field>
 
         {problem && (
