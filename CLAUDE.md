@@ -35,11 +35,15 @@ madrileno backend template (sibling repo `../madrileno`).
   `server.use(...)`; type fixtures against contract-inferred types.
 - Blocks bracketed by `// frontend:auction-block-start` / `-end` are demo
   wiring that `scripts/init-project.mjs` strips — keep the markers accurate.
-- UI: compose the primitives in `src/ui/` (`Button`, `Field`, `Input`, `Card`,
-  `Badge`) — don't hand-write raw elements or Tailwind in feature code. Forms
-  go in `<Field label error>` (it wires the label + `aria-invalid`). Style with
-  tokens (`bg-card`, `text-muted-foreground`, …), never hard-coded colors, so
-  dark mode works for free. See `src/ui/README.md`.
+- UI: this is **shadcn/ui** (base-nova style, built on Base UI), configured in
+  `components.json`. Compose the primitives in `src/components/ui/` (`Button`,
+  `Input`, `Field`, `Card`, `Badge`) — don't hand-write raw elements or Tailwind
+  in feature code. Add more with `pnpm dlx shadcn@latest add <name>`; those files
+  are vendored (edit freely, lint relaxes react-refresh/label rules there). Forms
+  use the `Field` composition (`Field` + `FieldLabel htmlFor` + control + `FieldError`)
+  and set `aria-invalid` on the control. Style with tokens (`bg-card`,
+  `text-primary`, …), never hard-coded colors, so dark mode + the wine palette
+  (`src/styles/tailwind.css`) apply for free.
 
 # Modes
 

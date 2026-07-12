@@ -7,10 +7,10 @@ import { problemFrom, problemTag, type Problem } from '@/api/problem'
 import { useAuth } from '@/features/auth/useAuth'
 import { usePriceFormatter } from '@/features/auctions/format'
 import { useAuction, useBids, usePlaceBid, type Auction } from '@/features/auctions/queries'
-import { Badge } from '@/ui/badge'
-import { Button } from '@/ui/button'
-import { Field } from '@/ui/field'
-import { Input } from '@/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
 
 const bidSchema = z.object({
   amount: z.coerce.number().positive('Bid must be a positive amount'),
@@ -67,14 +67,18 @@ function PlaceBidForm({ auction }: { auction: Auction }) {
 
   return (
     <form onSubmit={(e) => void onSubmit(e)} className="flex max-w-xs flex-col gap-3" noValidate>
-      <Field label={`Your bid (${auction.currency})`} error={errors.amount?.message}>
+      <Field data-invalid={errors.amount !== undefined}>
+        <FieldLabel htmlFor="bid-amount">Your bid ({auction.currency})</FieldLabel>
         <Input
+          id="bid-amount"
           type="number"
           step="0.01"
           min="0"
           placeholder={String(auction.currentPrice)}
+          aria-invalid={errors.amount !== undefined}
           {...register('amount')}
         />
+        {errors.amount && <FieldError>{errors.amount.message}</FieldError>}
       </Field>
       <Button type="submit" disabled={placeBid.isPending || auction.status !== 'Open'}>
         {placeBid.isPending ? 'Placing…' : 'Place bid'}
@@ -160,7 +164,9 @@ function AuctionDetail({ auctionId }: { auctionId: string }) {
           {auction.wineName}
           {auction.vintage != null ? ` ${String(auction.vintage)}` : ''}
         </h1>
-        <Badge variant={auction.status === 'Open' ? 'accent' : 'default'}>{auction.status}</Badge>
+        <Badge variant={auction.status === 'Open' ? 'default' : 'secondary'}>
+          {auction.status}
+        </Badge>
       </div>
       <p className="text-sm text-muted-foreground">
         {auction.color} · {auction.region} · {auction.appellation} · {auction.producerName} ·{' '}

@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
-import { Button } from '@/ui/button'
-import { ThemeToggle } from '@/ui/theme-toggle'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export function Layout({ children }: { children: ReactNode }) {
   const { tokens, logout } = useAuth()
@@ -28,9 +28,9 @@ export function Layout({ children }: { children: ReactNode }) {
                 </Button>
               </>
             ) : (
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/login">Log in</Link>
-              </Button>
+              <Link to="/login" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+                Log in
+              </Link>
             )}
             <ThemeToggle />
           </nav>

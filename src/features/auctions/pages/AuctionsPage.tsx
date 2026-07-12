@@ -3,33 +3,41 @@ import { Link } from 'react-router-dom'
 import { useInstantFormatter } from '@/api/datetime'
 import { usePriceFormatter } from '@/features/auctions/format'
 import { PAGE_SIZE, useAuctionsPage, type AuctionSummary } from '@/features/auctions/queries'
-import { Badge } from '@/ui/badge'
-import { Button } from '@/ui/button'
-import { Card } from '@/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 function AuctionCard({ auction }: { auction: AuctionSummary }) {
   const formatInstant = useInstantFormatter()
   const price = usePriceFormatter()
   return (
     <li>
-      <Card className="flex h-full flex-col gap-2 p-4">
-        <div className="flex items-start justify-between gap-2">
-          <Link
-            to={`/auctions/${auction.id}`}
-            className="text-lg font-semibold text-primary underline-offset-4 hover:underline"
-          >
-            {auction.wineName}
-            {auction.vintage != null ? ` ${String(auction.vintage)}` : ''}
-          </Link>
-          <Badge variant={auction.status === 'Open' ? 'accent' : 'default'}>{auction.status}</Badge>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {auction.color} · {auction.region} · {auction.producerName}
-        </p>
-        <p className="mt-auto text-sm">
-          <strong className="text-base">{price(auction.currentPrice, auction.currency)}</strong>
-          <span className="text-muted-foreground"> · ends {formatInstant(auction.endsAt)}</span>
-        </p>
+      <Card className="h-full">
+        <CardHeader>
+          <CardTitle>
+            <Link
+              to={`/auctions/${auction.id}`}
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              {auction.wineName}
+              {auction.vintage != null ? ` ${String(auction.vintage)}` : ''}
+            </Link>
+          </CardTitle>
+          <CardAction>
+            <Badge variant={auction.status === 'Open' ? 'default' : 'secondary'}>
+              {auction.status}
+            </Badge>
+          </CardAction>
+        </CardHeader>
+        <CardContent className="flex flex-1 flex-col gap-2 text-sm">
+          <p className="text-muted-foreground">
+            {auction.color} · {auction.region} · {auction.producerName}
+          </p>
+          <p className="mt-auto">
+            <strong className="text-base">{price(auction.currentPrice, auction.currency)}</strong>
+            <span className="text-muted-foreground"> · ends {formatInstant(auction.endsAt)}</span>
+          </p>
+        </CardContent>
       </Card>
     </li>
   )
