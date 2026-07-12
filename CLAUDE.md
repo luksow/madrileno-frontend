@@ -42,8 +42,8 @@ madrileno backend template (sibling repo `../madrileno`).
   are vendored (edit freely, lint relaxes react-refresh/label rules there). Forms
   use the `Field` composition (`Field` + `FieldLabel htmlFor` + control + `FieldError`)
   and set `aria-invalid` on the control. Style with tokens (`bg-card`,
-  `text-primary`, …), never hard-coded colors, so dark mode + the wine palette
-  (`src/styles/tailwind.css`) apply for free.
+  `text-primary`, …), never hard-coded colors, so dark mode and the theme
+  palette (`src/styles/tailwind.css`) apply for free.
 
 # Modes
 
