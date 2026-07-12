@@ -1,5 +1,6 @@
 import js from '@eslint/js'
 import prettier from 'eslint-config-prettier'
+import jsxA11y from 'eslint-plugin-jsx-a11y'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import globals from 'globals'
@@ -15,6 +16,7 @@ export default tseslint.config(
       ...tseslint.configs.recommendedTypeChecked,
       reactHooks.configs.flat['recommended-latest'],
       reactRefresh.configs.vite,
+      jsxA11y.flatConfigs.recommended,
       prettier,
     ],
     languageOptions: {
@@ -45,11 +47,15 @@ export default tseslint.config(
     rules: { 'no-restricted-globals': 'off' },
   },
 
-  // UI primitives export their cva variant helpers alongside the component (shadcn convention);
-  // that's fine here — these files aren't hot-reload-sensitive feature code.
+  // Vendored shadcn/ui primitives: they export cva variant helpers alongside the component, and
+  // the generic Label associates with a control at the call site, not in the primitive. Relax the
+  // rules that false-positive on this canonical registry code (a11y is enforced on our usage).
   {
-    files: ['src/ui/**/*.tsx'],
-    rules: { 'react-refresh/only-export-components': 'off' },
+    files: ['src/components/ui/**/*.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+      'jsx-a11y/label-has-associated-control': 'off',
+    },
   },
 
   {
