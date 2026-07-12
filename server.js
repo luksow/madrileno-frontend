@@ -6,10 +6,8 @@ import express from 'express'
 const isProduction = process.env.NODE_ENV === 'production'
 const port = Number(process.env.PORT ?? 5173)
 
-// Content Security Policy for production HTML responses. Inline scripts (the theme setter and the
-// dehydrated-state script) are allowed only via a per-request nonce — no 'unsafe-inline' for
-// scripts. `style-src` keeps 'unsafe-inline' (inline styles are far lower risk, and some UI libs
-// set them). If you enable OpenObserve RUM, add its host to `connect-src`.
+// CSP for production HTML: inline scripts run only via the per-request nonce (no 'unsafe-inline').
+// If you enable OpenObserve RUM, add its host to `connect-src`.
 function contentSecurityPolicy(nonce) {
   return [
     "default-src 'self'",
@@ -116,8 +114,8 @@ app.use('*all', async (req, res) => {
 
     const { pipe, abort, dehydratedState } = await render(url, apiBaseUrl)
 
-    // One nonce per request authorizes the inline scripts under the CSP (prod only; in dev, Vite's
-    // HMR needs unsafe-inline/eval, so no CSP there).
+    // Per-request nonce authorizes the inline scripts under the CSP (prod only — Vite HMR needs
+    // inline/eval in dev).
     const nonce = isProduction ? randomBytes(16).toString('base64') : ''
     res.status(200)
     res.set({

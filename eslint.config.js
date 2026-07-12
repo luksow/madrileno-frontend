@@ -47,9 +47,8 @@ export default tseslint.config(
     rules: { 'no-restricted-globals': 'off' },
   },
 
-  // Vendored shadcn/ui primitives: they export cva variant helpers alongside the component, and
-  // the generic Label associates with a control at the call site, not in the primitive. Relax the
-  // rules that false-positive on this canonical registry code (a11y is enforced on our usage).
+  // Vendored shadcn/ui primitives — relax the two rules that false-positive on canonical registry
+  // code (variant-helper exports; the generic Label associates at the call site).
   {
     files: ['src/components/ui/**/*.tsx'],
     rules: {

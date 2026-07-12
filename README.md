@@ -8,8 +8,8 @@ the single source of truth and drift is a compile error.
 Stack: Vite + React 19 + TypeScript (strict) + TanStack Query + oRPC
 (`@orpc/openapi-client` + `@orpc/tanstack-query`) + zod + react-router +
 react-hook-form + Temporal.
-Tests: Vitest + Testing Library + MSW, plus a Playwright e2e smoke. No
-component framework — plain CSS; bring your own design system.
+Tests: Vitest + Testing Library + MSW, plus a Playwright e2e smoke. UI is
+shadcn/ui (Tailwind v4) with a themeable token palette and dark mode.
 
 ## The contract loop (the whole point)
 
@@ -94,6 +94,27 @@ OpenObserve RUM pairs with the backend's OpenObserve instance: set the
 `VITE_OPENOBSERVE_RUM_*` variables (see `.env.sample`; client token from
 OpenObserve → Ingestion) and sessions, replays, and browser errors land next
 to the backend traces. Unset = the SDK never loads (it's a lazy chunk).
+
+## Security
+
+Deliberate tradeoffs — accept or change them before shipping:
+
+- **Tokens in `localStorage`** (`src/features/auth/tokenStore.ts`): XSS-exposed
+  by design, in exchange for being SSR-safe, CSRF-immune, and simple. Acceptable
+  for low-to-moderate risk (the CSP below hardens XSS). For sensitive data, move
+  to httpOnly/Secure/SameSite cookies (the `/v1` forwarder already passes
+  `Set-Cookie` through) and add CSRF protection.
+- **Content Security Policy** (production SSR): `script-src 'self' 'nonce-…'` — no
+  `unsafe-inline` for scripts; the two inline scripts (pre-paint theme setter,
+  dehydrated state) are authorized by a per-request nonce. Plus `object-src
+'none'`, `frame-ancestors 'none'`, `form-action 'self'`. Dev has no CSP (Vite
+  HMR needs inline/eval); a static SPA deploy must set CSP at the CDN with the
+  theme script's hash; enabling RUM needs its host in `connect-src`.
+- **Other posture**: the dev login (`/v1/auth/dev`) is backend-gated by
+  `DEV_AUTH_ENABLED` (keep it off in production); the SSR server sends
+  `nosniff` + `Referrer-Policy`, strips hop-by-hop headers on the `/v1` forward,
+  and never leaks stack traces to visitors.
+- **Reporting**: disclose vulnerabilities privately to the maintainer.
 
 ## Conventions
 

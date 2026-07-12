@@ -14,8 +14,7 @@ test('healthz answers', async ({ request }) => {
   expect(res.status()).toBe(200)
 })
 
-// Enforce accessibility in CI: the login page is fully backend-free, so this
-// runs without a running API. Fails the build on any WCAG A/AA violation.
+// Enforce a11y in CI — backend-free, fails on any WCAG A/AA violation.
 test('login page has no accessibility violations', async ({ page }) => {
   await page.goto('/login')
   await page.getByRole('heading', { name: 'Log in' }).waitFor()

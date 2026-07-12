@@ -3,9 +3,8 @@ import { useSyncExternalStore } from 'react'
 export type Theme = 'light' | 'dark'
 const STORAGE_KEY = 'theme'
 
-// Source of truth is the `.dark` class on <html>, set before paint by the inline script in
-// index.html (so there's no flash). Read through useSyncExternalStore — SSR-safe (server snapshot
-// is 'light') and free of the setState-in-effect antipattern.
+// The `.dark` class on <html> is the source of truth, set before paint by the inline script in
+// index.html (no flash). useSyncExternalStore keeps the read SSR-safe.
 const listeners = new Set<() => void>()
 
 function currentTheme(): Theme {
