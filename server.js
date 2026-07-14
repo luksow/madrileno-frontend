@@ -16,7 +16,6 @@ function contentSecurityPolicy(nonce) {
     "img-src 'self' data:",
     "font-src 'self'",
     "connect-src 'self'",
-    // Installable PWA: the service worker and web manifest are same-origin.
     "worker-src 'self'",
     "manifest-src 'self'",
     "object-src 'none'",

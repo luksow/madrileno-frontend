@@ -1,10 +1,7 @@
 import { toast } from 'sonner'
 import { registerSW } from 'virtual:pwa-register'
 
-// Registers the generated service worker (client-only). Bundled rather than
-// injected as an inline <script>, so the prod nonce CSP needs no exception.
-// registerType is 'prompt': a new build never activates behind the user's back —
-// we surface it as a toast and let them reload.
+// 'prompt' registration: surface a new build as a toast instead of activating silently.
 export function registerPwa(): void {
   const updateSW = registerSW({
     onNeedRefresh() {
