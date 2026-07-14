@@ -5,12 +5,13 @@ import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { client } from '@/api/orpc'
 import { problemFrom, type Problem } from '@/api/problem'
+import { m } from '@/paraglide/messages'
 import { tokenStore } from '@/features/auth/tokenStore'
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 
-const loginSchema = z.object({ email: z.string().email('Enter a valid email address') })
+const loginSchema = z.object({ email: z.string().email(m.login_email_invalid()) })
 type LoginForm = z.infer<typeof loginSchema>
 
 export function LoginPage() {
@@ -33,7 +34,7 @@ export function LoginPage() {
         problemFrom(error) ?? {
           type: 'unknown',
           status: 0,
-          title: 'Login failed — is the backend up?',
+          title: m.login_failed(),
         },
       )
     }
@@ -41,17 +42,18 @@ export function LoginPage() {
 
   return (
     <section className="mx-auto flex max-w-sm flex-col gap-6 py-12">
-      <title>Log in — madrileno</title>
+      <title>{m.login_page_title()}</title>
       <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">Log in</h1>
+        <h1 className="text-2xl font-semibold">{m.login_heading()}</h1>
         <p className="text-sm text-muted-foreground">
-          Dev login: any email works when the backend runs with <code>DEV_AUTH_ENABLED=true</code>.
+          {m.login_hint_before()}
+          <code>DEV_AUTH_ENABLED=true</code>.
         </p>
       </header>
 
       <form onSubmit={(e) => void onSubmit(e)} noValidate className="flex flex-col gap-4">
         <Field data-invalid={errors.email !== undefined}>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
+          <FieldLabel htmlFor="email">{m.login_email_label()}</FieldLabel>
           <Input
             id="email"
             type="email"
@@ -71,7 +73,7 @@ export function LoginPage() {
         )}
 
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Logging in…' : 'Log in'}
+          {isSubmitting ? m.login_submitting() : m.login_submit()}
         </Button>
       </form>
     </section>

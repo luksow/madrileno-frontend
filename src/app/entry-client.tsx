@@ -4,12 +4,15 @@ import { createRoot, hydrateRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { registerAuthTokenProvider } from '@/features/auth/tokenStore'
 import { initRum } from '@/observability/rum'
+import { getLocale } from '@/paraglide/runtime'
 import '../styles/tailwind.css'
 import { App } from './App'
 import { makeQueryClient } from './queryClient'
 import { registerPwa } from './registerPwa'
 
 registerAuthTokenProvider()
+// Reflect the resolved locale on <html lang> (the static SPA index.html ships lang="en").
+document.documentElement.lang = getLocale()
 
 declare global {
   interface Window {

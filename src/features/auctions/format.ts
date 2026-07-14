@@ -1,10 +1,8 @@
-import { useHydrated } from '@/api/hydration'
+import { getLocale } from '@/paraglide/runtime'
 
-// Same hydration contract as useInstantFormatter: a fixed locale until the
-// client takes over, the visitor's ambient locale after.
+// Currency formatting follows the app locale; server and client agree on it via
+// the cookie, so there's no hydration mismatch to defer around.
 export function usePriceFormatter(): (amount: number, currency: string) => string {
-  const hydrated = useHydrated()
-  const locale = hydrated ? undefined : 'en-US'
   return (amount, currency) =>
-    new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount)
+    new Intl.NumberFormat(getLocale(), { style: 'currency', currency }).format(amount)
 }

@@ -39,6 +39,22 @@ for (const file of walk('src')) {
   }
 }
 
+// Drop the demo's translation keys (auction_*) from every locale catalog; the
+// paraglide output regenerates without them on the next build.
+let prunedKeys = 0
+const messagesDir = 'messages'
+if (fs.existsSync(messagesDir)) {
+  for (const file of fs.readdirSync(messagesDir).filter((f) => f.endsWith('.json'))) {
+    const catalogPath = path.join(messagesDir, file)
+    const catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'))
+    const kept = Object.fromEntries(
+      Object.entries(catalog).filter(([key]) => !key.startsWith('auction_')),
+    )
+    prunedKeys += Object.keys(catalog).length - Object.keys(kept).length
+    fs.writeFileSync(catalogPath, JSON.stringify(kept, null, 2) + '\n')
+  }
+}
+
 const routerPath = path.join('src', 'app', 'router.tsx')
 const router = fs.readFileSync(routerPath, 'utf-8')
 const anchorRe = /^.*frontend:home-anchor.*(?:\n|$)/m
@@ -66,6 +82,7 @@ if (name) {
 
 console.log(`Deleted demo feature: ${deletedDemo ? auctionsDir : '(already gone)'}`)
 console.log(`Stripped auction blocks from ${stripped} file(s)`)
+console.log(`Pruned ${prunedKeys} demo translation key(s)`)
 if (name) console.log(`Renamed package to ${name}-frontend`)
 console.log()
 console.log('Next:')

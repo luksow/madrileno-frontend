@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import { paraglideVitePlugin } from '@inlang/paraglide-js'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
@@ -20,6 +21,12 @@ export default defineConfig(({ isSsrBuild }) => ({
   plugins: [
     react(),
     tailwindcss(),
+    paraglideVitePlugin({
+      project: './project.inlang',
+      outdir: './src/paraglide',
+      // cookie (switcher + SSR read) → Accept-Language/navigator → base locale.
+      strategy: ['cookie', 'preferredLanguage', 'baseLocale'],
+    }),
     // The service worker is a client artifact — skip PWA in the SSR bundle.
     ...(isSsrBuild
       ? []

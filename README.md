@@ -9,7 +9,8 @@ Stack: Vite + React 19 + TypeScript (strict) + TanStack Query + oRPC
 (`@orpc/openapi-client` + `@orpc/tanstack-query`) + zod + react-router +
 react-hook-form + Temporal.
 Tests: Vitest + Testing Library + MSW, plus a Playwright e2e smoke. UI is
-shadcn/ui (Tailwind v4) with a themeable token palette and dark mode.
+shadcn/ui (Tailwind v4) with a themeable token palette and dark mode, and
+multi-language (English + Spanish) via Paraglide JS.
 
 ## The contract loop (the whole point)
 
@@ -121,6 +122,34 @@ One follow-up if you go further: a **runtime-caching strategy** for the API if
 you want true offline _data_ (TanStack Query already caches in memory; choosing
 per-route Workbox strategies is the next step).
 
+## Internationalization (i18n)
+
+Multi-language via [Paraglide JS](https://inlang.com/m/gerre34r/library-inlang-paraglideJs)
+— compiler-based, so every message is a typed, tree-shaken function and a missing
+or renamed key is a **compile error** (the same "drift is a compile error" stance
+as the contract). Ships with **English (base) + Spanish**; the header has a
+language switcher.
+
+- **Messages** live in `messages/{locale}.json`; `pnpm run paraglide:compile`
+  (and every `dev`/`build`) generates `src/paraglide/` — committed like
+  `src/contracts/`. Use them as `m.key({ param })` from `@/paraglide/messages`.
+- **Switching**: `LanguageToggle` calls Paraglide's `setLocale`, which persists
+  the choice in a (non-sensitive) `PARAGLIDE_LOCALE` cookie and reloads so SSR
+  re-renders in the new language.
+- **SSR** (`server.js` + `entry-server.tsx`): the server resolves the locale
+  (cookie → `Accept-Language` → base), sets `<html lang>`, and echoes the cookie
+  so the client hydrates in the **same** language — no mismatch. `entry-server`
+  scopes the per-request locale with `overwriteGetLocale` right before the
+  synchronous render; `server.js` stays paraglide-free (the prod image ships
+  `dist/`, and the runtime is bundled into `entry-server`).
+- **Formatting**: dates and currency (`src/api/datetime.ts`,
+  `src/features/auctions/format.ts`) follow the app locale too, so a Spanish user
+  gets Spanish text _and_ Spanish number/date formatting.
+- **Add a language**: add it to `project.inlang/settings.json` + a
+  `messages/<locale>.json`, then `pnpm run paraglide:compile`. **Add a message**:
+  add the key to `messages/en.json` (and the others). `init-project` prunes the
+  demo's `auction_*` keys.
+
 ## Observability (opt-in)
 
 OpenObserve RUM pairs with the backend's OpenObserve instance: set the
@@ -193,4 +222,5 @@ typed client, routing, tests, SSR opt-in. After running the backend's own
 | `smoke:docker`                           | build + run the SSR image, verify healthz, SSR HTML and the container healthcheck             |
 | `sync-contracts`                         | vendor the backend-generated contract                                                         |
 | `generate-pwa-assets`                    | rasterize `public/pwa-icon.svg` into the PWA icon PNGs (also runs in `build`)                 |
+| `paraglide:compile`                      | compile `messages/*.json` → `src/paraglide/` (also runs in `dev`/`build`)                     |
 | `init-project`                           | strip the demo for a fresh project                                                            |

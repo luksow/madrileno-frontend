@@ -12,6 +12,11 @@ madrileno backend template (sibling repo `../madrileno`).
 - NEVER use the JS `Date` global outside `src/api/datetime.ts` (ESLint enforces
   this). Use `Temporal` from `temporal-polyfill`; convert wire values at the
   boundary with `toInstant` / `formatInstant`.
+- User-facing text goes through Paraglide: add the key to `messages/en.json`
+  (and the other locales), then render `m.key({ param })` from
+  `@/paraglide/messages` — never hardcode display strings in components. Demo
+  keys are prefixed `auction_` so `init-project` can prune them. `src/paraglide/`
+  is GENERATED (like `src/contracts/`) — never edit it; `dev`/`build` regenerate.
 - Strict TypeScript is on (`strict`, `noUncheckedIndexedAccess`). Don't cast
   your way around it; model the type properly.
 - Expected API failures surface as `ORPCError`s carrying the backend's Problem

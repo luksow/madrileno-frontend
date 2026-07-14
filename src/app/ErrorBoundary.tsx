@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from 'react'
+import { m } from '@/paraglide/messages'
 import { Button } from '@/components/ui/button'
 
 interface Props {
@@ -20,9 +21,9 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.error !== null) {
       return (
         <main className="mx-auto flex max-w-4xl flex-col items-start gap-4 px-4 py-8">
-          <h1 className="text-2xl font-semibold">Something went wrong</h1>
+          <h1 className="text-2xl font-semibold">{m.error_heading()}</h1>
           <p className="text-destructive">{this.state.error.message}</p>
-          <Button onClick={() => window.location.assign('/')}>Back to start</Button>
+          <Button onClick={() => window.location.assign('/')}>{m.error_back()}</Button>
         </main>
       )
     }
