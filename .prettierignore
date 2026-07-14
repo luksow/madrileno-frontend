@@ -2,4 +2,5 @@ dist
 node_modules
 src/contracts
 src/paraglide
+project.inlang
 pnpm-lock.yaml
