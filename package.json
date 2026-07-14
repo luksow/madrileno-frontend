@@ -19,6 +19,7 @@
     "e2e": "playwright test",
     "sync-contracts": "node scripts/sync-contracts.mjs",
     "init-project": "node scripts/init-project.mjs",
+    "generate-pwa-assets": "pwa-assets-generator",
     "e2e:prod": "npm run build:ssr && cross-env E2E_PROD=1 playwright test",
     "smoke:docker": "node scripts/docker-smoke.mjs"
   },
@@ -63,6 +64,7 @@
     "@types/node": "^25.5.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@vite-pwa/assets-generator": "^1.0.2",
     "@vitejs/plugin-react": "^6.0.1",
     "cross-env": "^10.1.0",
     "eslint": "^10.6.0",
@@ -84,6 +86,9 @@
   },
   "packageManager": "pnpm@10.34.4+sha512.8768be55200ae3f2226b6527fcca2687e14bc4e5f12d7721a0f25da3df47915177058648db4177baf348120fa0ba2752d8d8d93f6beaf1fe64ae18da8de961af",
   "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp"
+    ],
     "ignoredBuiltDependencies": [
       "msw"
     ]
