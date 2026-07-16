@@ -2,15 +2,10 @@ import { dehydrate, QueryClientProvider, type DehydratedState } from '@tanstack/
 import { StrictMode } from 'react'
 import { renderToPipeableStream } from 'react-dom/server'
 import { StaticRouter } from 'react-router-dom'
-import { type Locale } from '@/i18n/config'
 import { LocaleProvider } from '@/i18n/LocaleProvider'
 import { App } from './App'
 import { makeQueryClient } from './queryClient'
 import { ssrPrefetchers } from './ssrPrefetch'
-
-// Re-exported for server.js (bundled into dist/server) so it needs no direct
-// import from src/i18n — the prod image ships dist/, not src/.
-export { detectLocale, localeCookie } from '@/i18n/config'
 
 export interface RenderResult {
   pipe: (destination: Parameters<ReturnType<typeof renderToPipeableStream>['pipe']>[0]) => void
@@ -19,11 +14,7 @@ export interface RenderResult {
 }
 
 // Resolves on onShellReady, rejects on shell error — the caller can pipe immediately.
-export async function render(
-  url: string,
-  apiBaseUrl: string,
-  locale: Locale,
-): Promise<RenderResult> {
+export async function render(url: string, apiBaseUrl: string): Promise<RenderResult> {
   const queryClient = makeQueryClient()
   // Prefetchers are independent — pay for the slowest, not the sum.
   await Promise.all(ssrPrefetchers.map((prefetch) => prefetch(queryClient, url, apiBaseUrl)))
@@ -33,7 +24,7 @@ export async function render(
       <StrictMode>
         <QueryClientProvider client={queryClient}>
           <StaticRouter location={url}>
-            <LocaleProvider initialLocale={locale}>
+            <LocaleProvider>
               <App />
             </LocaleProvider>
           </StaticRouter>

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { useTranslations } from 'use-intl'
 import { useAuth } from '@/features/auth/useAuth'
 import { Button, buttonVariants } from '@/components/ui/button'
-import { LanguageToggle } from '@/components/language-toggle'
 import { ThemeToggle } from '@/components/theme-toggle'
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -35,7 +34,6 @@ export function Layout({ children }: { children: ReactNode }) {
                 {t('logIn')}
               </Link>
             )}
-            <LanguageToggle />
             <ThemeToggle />
           </nav>
         </div>

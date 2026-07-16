@@ -22,7 +22,7 @@ function renderApp(path: string) {
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={[path]}>
-        <LocaleProvider initialLocale="en">
+        <LocaleProvider>
           <App />
         </LocaleProvider>
       </MemoryRouter>

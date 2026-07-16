@@ -10,7 +10,7 @@ Stack: Vite + React 19 + TypeScript (strict) + TanStack Query + oRPC
 react-hook-form + Temporal.
 Tests: Vitest + Testing Library + MSW, plus a Playwright e2e smoke. UI is
 shadcn/ui (Tailwind v4) with a themeable token palette and dark mode, and
-multi-language (English + Spanish) via use-intl.
+externalized UI strings (English) via use-intl, ready for i18n.
 
 ## The contract loop (the whole point)
 
@@ -122,35 +122,33 @@ One follow-up if you go further: a **runtime-caching strategy** for the API if
 you want true offline _data_ (TanStack Query already caches in memory; choosing
 per-route Workbox strategies is the next step).
 
-## Internationalization (i18n)
+## Internationalization (i18n-ready, English-only)
 
-Multi-language via [use-intl](https://next-intl.dev/docs/environments/core-library)
-(the framework-agnostic core of next-intl): a typed message dictionary + a small
-locale context, **no codegen and no build step**. Ships with **English (base) +
-Spanish**; the header has a language switcher.
+UI text goes through [use-intl](https://next-intl.dev/docs/environments/core-library)
+— a typed message dictionary, no codegen. It **ships English only, to match the
+backend** (emails and other backend content are English); the machinery for
+_selecting_ a language is deliberately absent — see the note below.
 
-- **Messages** are plain JSON in `src/i18n/messages/{locale}.json`, grouped by
-  namespace. Render them with `useTranslations('namespace')` → `t('key', { param })`.
-  Types come from `typeof en` (`src/i18n/use-intl.d.ts`), so a missing/misnamed key
-  — or a locale that drifts from the base — is a **compile error**.
-- **Context**: `LocaleProvider` wraps the app with use-intl's `IntlProvider`. The
-  switcher (`LanguageToggle`) flips locale via context state — **no page reload**,
-  since both small catalogs are already loaded — and persists a `LOCALE` cookie.
-- **SSR** (`server.js` + `entry-server.tsx`): the server resolves the locale
-  (cookie → `Accept-Language` → base) with a pure `detectLocale`, sets `<html lang>`,
-  and echoes the cookie so the client hydrates in the **same** language — no
-  mismatch. The locale flows through React context (not a global), so SSR is
-  concurrency-safe by construction. `server.js` stays i18n-library-free: it reads
-  `detectLocale`/`localeCookie` re-exported from the bundled `entry-server` (the prod
-  image ships `dist/`, not `src/`).
-- **Formatting**: dates and currency (`src/api/datetime.ts`,
-  `src/features/auctions/format.ts`) follow the app locale via `useLocale()`, so a
-  Spanish user gets Spanish text _and_ Spanish number/date formatting; the timezone
-  still defers to post-hydration (the server can't know it).
-- **Add a language**: add it to `locales` in `src/i18n/config.ts` + a
-  `messages/<locale>.json`. **Add a message**: add the key to `en.json` (TypeScript
-  flags the other locales until they match). `init-project` prunes the demo's
-  `auction` namespace.
+- **Messages** are plain JSON in `src/i18n/messages/en.json`, grouped by namespace.
+  Render them with `useTranslations('namespace')` → `t('key', { param })`. Types come
+  from `typeof en` (`src/i18n/use-intl.d.ts`), so a missing or misnamed key is a
+  **compile error**. Externalizing strings now keeps the eventual jump to multiple
+  languages mechanical.
+- **One provider, one locale**: `LocaleProvider` wraps the app with use-intl's
+  `IntlProvider` fixed to `en`. No language switcher, no cookie, no `Accept-Language`
+  negotiation — with one language there's nothing to negotiate — and `<html lang="en">`
+  is static. `init-project` prunes the demo's `auction` namespace.
+
+### Adding languages later
+
+When you do, **source the locale from the backend, not a browser cookie.** The
+moment the backend emits localized content (emails, notifications), the user's
+language becomes a user-record attribute the backend owns — so the frontend should
+read it from the auth/user payload and change it through an API call, with
+`Accept-Language` as a pre-login default at most. A frontend-only cookie would be
+split-brain (e.g. a Spanish UI but English emails). That's why the cookie /
+negotiation / switcher machinery is intentionally left out until the backend
+supports a per-user language.
 
 ## Observability (opt-in)
 
