@@ -39,7 +39,6 @@ for (const file of walk('src')) {
   }
 }
 
-// Drop the demo's translation namespace (auction) from every locale catalog.
 let prunedLocales = 0
 const messagesDir = path.join('src', 'i18n', 'messages')
 if (fs.existsSync(messagesDir)) {

@@ -20,9 +20,7 @@ export function formatInstant(value: Date | string, options?: FormatInstantOptio
     .toLocaleString(options?.locale, { dateStyle: 'medium', timeStyle: 'short' })
 }
 
-// Language follows the app locale (server and client agree via the cookie, so
-// it's hydration-safe). The timezone is the one thing the server can't know, so
-// it stays UTC until hydration, then re-renders in the visitor's ambient zone.
+// The server can't know the visitor's timezone: UTC until hydration, then theirs.
 export function useInstantFormatter(): (value: Date | string) => string {
   const hydrated = useHydrated()
   const locale = useLocale()
