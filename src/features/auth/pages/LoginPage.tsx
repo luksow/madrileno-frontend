@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
+import { useTranslations } from 'use-intl'
 import { z } from 'zod'
 import { client } from '@/api/orpc'
 import { problemFrom, type Problem } from '@/api/problem'
@@ -10,12 +11,15 @@ import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 
-const loginSchema = z.object({ email: z.string().email('Enter a valid email address') })
-type LoginForm = z.infer<typeof loginSchema>
+interface LoginForm {
+  email: string
+}
 
 export function LoginPage() {
+  const t = useTranslations('login')
   const navigate = useNavigate()
   const [problem, setProblem] = useState<Problem | null>(null)
+  const loginSchema = z.object({ email: z.string().email(t('emailInvalid')) })
   const {
     register,
     handleSubmit,
@@ -33,7 +37,7 @@ export function LoginPage() {
         problemFrom(error) ?? {
           type: 'unknown',
           status: 0,
-          title: 'Login failed — is the backend up?',
+          title: t('failed'),
         },
       )
     }
@@ -41,17 +45,17 @@ export function LoginPage() {
 
   return (
     <section className="mx-auto flex max-w-sm flex-col gap-6 py-12">
-      <title>Log in — madrileno</title>
+      <title>{t('pageTitle')}</title>
       <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">Log in</h1>
+        <h1 className="text-2xl font-semibold">{t('heading')}</h1>
         <p className="text-sm text-muted-foreground">
-          Dev login: any email works when the backend runs with <code>DEV_AUTH_ENABLED=true</code>.
+          {t.rich('hint', { code: (chunks) => <code>{chunks}</code> })}
         </p>
       </header>
 
       <form onSubmit={(e) => void onSubmit(e)} noValidate className="flex flex-col gap-4">
         <Field data-invalid={errors.email !== undefined}>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
+          <FieldLabel htmlFor="email">{t('emailLabel')}</FieldLabel>
           <Input
             id="email"
             type="email"
@@ -71,7 +75,7 @@ export function LoginPage() {
         )}
 
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Logging in…' : 'Log in'}
+          {isSubmitting ? t('submitting') : t('submit')}
         </Button>
       </form>
     </section>

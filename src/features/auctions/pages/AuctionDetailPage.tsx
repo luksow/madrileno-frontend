@@ -2,57 +2,62 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Link, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
+import { useTranslations } from 'use-intl'
 import { z } from 'zod'
 import { useInstantFormatter } from '@/api/datetime'
 import { problemFrom, problemTag, type Problem } from '@/api/problem'
 import { useAuth } from '@/features/auth/useAuth'
 import { usePriceFormatter } from '@/features/auctions/format'
 import { useAuction, useBids, usePlaceBid, type Auction } from '@/features/auctions/queries'
+import { useAuctionStatusLabel } from '@/features/auctions/status'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 
-const bidSchema = z.object({
-  amount: z.coerce.number().positive('Bid must be a positive amount'),
-})
-type BidFormInput = z.input<typeof bidSchema>
-type BidForm = z.output<typeof bidSchema>
-
-function rejectionMessage(problem: Problem): string {
-  switch (problemTag(problem)) {
-    case 'bid-too-low':
-      return 'Bid too low — someone got there first. The current price has moved.'
-    case 'already-highest-bidder':
-      return 'You already hold the highest bid.'
-    case 'cannot-bid-on-own-auction':
-      return 'You can’t bid on your own auction.'
-    case 'auction-not-open':
-      return 'This auction is no longer open for bids.'
-    case 'authentication-failed':
-      return 'Your session expired — log in again to bid.'
-    default:
-      return problem.detail ?? problem.title
+function useRejectionMessage(): (problem: Problem) => string {
+  const t = useTranslations('auction')
+  return (problem) => {
+    switch (problemTag(problem)) {
+      case 'bid-too-low':
+        return t('rejectBidTooLow')
+      case 'already-highest-bidder':
+        return t('rejectAlreadyHighest')
+      case 'cannot-bid-on-own-auction':
+        return t('rejectOwnAuction')
+      case 'auction-not-open':
+        return t('rejectNotOpen')
+      case 'authentication-failed':
+        return t('rejectAuthExpired')
+      default:
+        return problem.detail ?? problem.title
+    }
   }
 }
 
 function PlaceBidForm({ auction }: { auction: Auction }) {
+  const t = useTranslations('auction')
+  const tNav = useTranslations('nav')
+  const rejectionMessage = useRejectionMessage()
   const { tokens } = useAuth()
   const placeBid = usePlaceBid(auction.id)
+  const bidSchema = z.object({ amount: z.coerce.number().positive(t('bidAmountPositive')) })
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<BidFormInput, unknown, BidForm>({ resolver: zodResolver(bidSchema) })
+  } = useForm<z.input<typeof bidSchema>, unknown, z.output<typeof bidSchema>>({
+    resolver: zodResolver(bidSchema),
+  })
 
   if (tokens === null) {
     return (
       <p className="text-sm text-muted-foreground">
         <Link to="/login" className="text-primary underline-offset-4 hover:underline">
-          Log in
-        </Link>{' '}
-        to place a bid.
+          {tNav('logIn')}
+        </Link>
+        {t('bidLoginSuffix')}
       </p>
     )
   }
@@ -63,13 +68,11 @@ function PlaceBidForm({ auction }: { auction: Auction }) {
       {
         onSuccess: () => {
           reset()
-          toast.success('Bid placed.')
+          toast.success(t('bidPlaced'))
         },
         onError: (error) => {
           const rejection = problemFrom(error)
-          toast.error(
-            rejection ? rejectionMessage(rejection) : 'Couldn’t place the bid — try again.',
-          )
+          toast.error(rejection ? rejectionMessage(rejection) : t('bidFailed'))
         },
       },
     )
@@ -78,7 +81,9 @@ function PlaceBidForm({ auction }: { auction: Auction }) {
   return (
     <form onSubmit={(e) => void onSubmit(e)} className="flex max-w-xs flex-col gap-3" noValidate>
       <Field data-invalid={errors.amount !== undefined}>
-        <FieldLabel htmlFor="bid-amount">Your bid ({auction.currency})</FieldLabel>
+        <FieldLabel htmlFor="bid-amount">
+          {t('bidAmountLabel', { currency: auction.currency })}
+        </FieldLabel>
         <Input
           id="bid-amount"
           type="number"
@@ -91,24 +96,25 @@ function PlaceBidForm({ auction }: { auction: Auction }) {
         {errors.amount && <FieldError>{errors.amount.message}</FieldError>}
       </Field>
       <Button type="submit" disabled={placeBid.isPending || auction.status !== 'Open'}>
-        {placeBid.isPending ? 'Placing…' : 'Place bid'}
+        {placeBid.isPending ? t('bidPlacing') : t('bidPlace')}
       </Button>
     </form>
   )
 }
 
 function BidHistory({ auctionId }: { auctionId: string }) {
+  const t = useTranslations('auction')
   const { data, isPending, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useBids(auctionId)
   const formatInstant = useInstantFormatter()
   const price = usePriceFormatter()
-  if (isPending) return <p className="text-muted-foreground">Loading bids…</p>
-  if (isError) return <p className="text-destructive">Couldn’t load the bid history.</p>
+  if (isPending) return <p className="text-muted-foreground">{t('bidLoading')}</p>
+  if (isError) return <p className="text-destructive">{t('bidError')}</p>
   const bids = data.pages.flatMap((page) => page.items)
   return (
     <div className="flex flex-col gap-3">
       {bids.length === 0 ? (
-        <p className="text-muted-foreground">No bids yet — be the first.</p>
+        <p className="text-muted-foreground">{t('bidNone')}</p>
       ) : (
         <ul className="flex flex-col divide-y divide-border">
           {bids.map((bid) => (
@@ -116,7 +122,7 @@ function BidHistory({ auctionId }: { auctionId: string }) {
               <strong>{price(bid.amount, bid.currency)}</strong>
               <span className="text-muted-foreground">
                 {' '}
-                by {bid.bidderRef} · {formatInstant(bid.createdAt)}
+                {t('bidBy', { bidder: bid.bidderRef, when: formatInstant(bid.createdAt) })}
               </span>
             </li>
           ))}
@@ -130,7 +136,7 @@ function BidHistory({ auctionId }: { auctionId: string }) {
           onClick={() => void fetchNextPage()}
           disabled={isFetchingNextPage}
         >
-          {isFetchingNextPage ? 'Loading…' : 'Load more bids'}
+          {isFetchingNextPage ? t('bidLoadingMore') : t('bidLoadMore')}
         </Button>
       )}
     </div>
@@ -138,28 +144,30 @@ function BidHistory({ auctionId }: { auctionId: string }) {
 }
 
 export function AuctionDetailPage() {
+  const t = useTranslations('auction')
   const { auctionId } = useParams()
   // The '/auctions/:auctionId' route guarantees the param; guarding here keeps
   // the query below from ever firing with a bogus id.
-  if (auctionId === undefined) return <p className="text-destructive">Missing auction id.</p>
+  if (auctionId === undefined) return <p className="text-destructive">{t('missingId')}</p>
   return <AuctionDetail auctionId={auctionId} />
 }
 
 function AuctionDetail({ auctionId }: { auctionId: string }) {
+  const t = useTranslations('auction')
   const { data: auction, isPending, isError } = useAuction(auctionId)
   const formatInstant = useInstantFormatter()
   const price = usePriceFormatter()
+  const statusLabel = useAuctionStatusLabel()
 
-  if (isPending) return <p className="text-muted-foreground">Loading auction…</p>
-  if (isError)
-    return <p className="text-destructive">Couldn’t load this auction — does it exist?</p>
+  if (isPending) return <p className="text-muted-foreground">{t('detailLoading')}</p>
+  if (isError) return <p className="text-destructive">{t('detailError')}</p>
 
   return (
     <section className="flex flex-col gap-4">
       <title>{`${auction.wineName} — madrileno`}</title>
       <p>
         <Link to="/" className="text-sm text-primary underline-offset-4 hover:underline">
-          ← All auctions
+          {t('detailBack')}
         </Link>
       </p>
       <div className="flex items-start justify-between gap-3">
@@ -168,7 +176,7 @@ function AuctionDetail({ auctionId }: { auctionId: string }) {
           {auction.vintage != null ? ` ${String(auction.vintage)}` : ''}
         </h1>
         <Badge variant={auction.status === 'Open' ? 'default' : 'secondary'}>
-          {auction.status}
+          {statusLabel(auction.status)}
         </Badge>
       </div>
       <p className="text-sm text-muted-foreground">
@@ -179,13 +187,14 @@ function AuctionDetail({ auctionId }: { auctionId: string }) {
       <p>
         <strong className="text-lg">{price(auction.currentPrice, auction.currency)}</strong>
         <span className="text-sm text-muted-foreground">
-          {' '}
-          (started at {price(auction.startingPrice, auction.currency)}) · ends{' '}
-          {formatInstant(auction.endsAt)}
+          {' ('}
+          {t('startedAt', { price: price(auction.startingPrice, auction.currency) })}
+          {') · '}
+          {t('ends', { when: formatInstant(auction.endsAt) })}
         </span>
       </p>
       <PlaceBidForm auction={auction} />
-      <h2 className="mt-2 text-lg font-semibold">Bid history</h2>
+      <h2 className="mt-2 text-lg font-semibold">{t('bidHistory')}</h2>
       <BidHistory auctionId={auction.id} />
     </section>
   )

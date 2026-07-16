@@ -1,14 +1,16 @@
 import { Link } from 'react-router-dom'
+import { useTranslations } from 'use-intl'
 
 export function NotFound() {
+  const t = useTranslations('notFound')
   return (
     <section className="flex flex-col gap-4">
-      <title>Not found — madrileno</title>
-      <h1 className="text-2xl font-semibold">Page not found</h1>
+      <title>{t('pageTitle')}</title>
+      <h1 className="text-2xl font-semibold">{t('heading')}</h1>
       <p className="text-muted-foreground">
-        Nothing lives at this address.{' '}
+        {t('body')}
         <Link to="/" className="text-primary underline-offset-4 hover:underline">
-          Back to the start.
+          {t('link')}
         </Link>
       </p>
     </section>

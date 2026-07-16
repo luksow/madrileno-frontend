@@ -1,0 +1,78 @@
+{
+  "nav": {
+    "skipToContent": "Skip to content",
+    "logOut": "Log out",
+    "logIn": "Log in"
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "label": "Change language"
+  },
+  "login": {
+    "pageTitle": "Log in — madrileno",
+    "heading": "Log in",
+    "hint": "Dev login: any email works when the backend runs with <code>DEV_AUTH_ENABLED=true</code>.",
+    "emailLabel": "Email",
+    "emailInvalid": "Enter a valid email address",
+    "submit": "Log in",
+    "submitting": "Logging in…",
+    "failed": "Login failed — is the backend up?"
+  },
+  "home": {
+    "heading": "It works",
+    "body": "This is the post-init shell: typed API client, auth, routing, tests, SSR opt-in. Add your first feature under <code>src/features/</code> and route it in <code>src/app/router.tsx</code>."
+  },
+  "notFound": {
+    "pageTitle": "Not found — madrileno",
+    "heading": "Page not found",
+    "body": "Nothing lives at this address. ",
+    "link": "Back to the start."
+  },
+  "error": {
+    "heading": "Something went wrong",
+    "back": "Back to start"
+  },
+  "auction": {
+    "listPageTitle": "Auctions — madrileno",
+    "listHeading": "Wine auctions",
+    "loadingList": "Loading auctions…",
+    "errorList": "Couldn’t load auctions — is the backend up?",
+    "empty": "No auctions yet. Log in and create one via the API.",
+    "prev": "← Previous",
+    "next": "Next →",
+    "pageRange": "{from}–{to} of {total}",
+    "ends": "ends {when}",
+    "statusOpen": "Open",
+    "statusClosed": "Closed",
+    "statusCancelled": "Cancelled",
+    "detailBack": "← All auctions",
+    "startedAt": "started at {price}",
+    "detailLoading": "Loading auction…",
+    "detailError": "Couldn’t load this auction — does it exist?",
+    "missingId": "Missing auction id.",
+    "bidLoginSuffix": " to place a bid.",
+    "bidAmountLabel": "Your bid ({currency})",
+    "bidAmountPositive": "Bid must be a positive amount",
+    "bidPlace": "Place bid",
+    "bidPlacing": "Placing…",
+    "bidPlaced": "Bid placed.",
+    "bidFailed": "Couldn’t place the bid — try again.",
+    "bidHistory": "Bid history",
+    "bidNone": "No bids yet — be the first.",
+    "bidLoading": "Loading bids…",
+    "bidError": "Couldn’t load the bid history.",
+    "bidLoadMore": "Load more bids",
+    "bidLoadingMore": "Loading…",
+    "bidBy": "by {bidder} · {when}",
+    "rejectBidTooLow": "Bid too low — someone got there first. The current price has moved.",
+    "rejectAlreadyHighest": "You already hold the highest bid.",
+    "rejectOwnAuction": "You can’t bid on your own auction.",
+    "rejectNotOpen": "This auction is no longer open for bids.",
+    "rejectAuthExpired": "Your session expired — log in again to bid."
+  }
+}

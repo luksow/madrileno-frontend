@@ -12,6 +12,11 @@ madrileno backend template (sibling repo `../madrileno`).
 - NEVER use the JS `Date` global outside `src/api/datetime.ts` (ESLint enforces
   this). Use `Temporal` from `temporal-polyfill`; convert wire values at the
   boundary with `toInstant` / `formatInstant`.
+- User-facing text goes through use-intl: add the key to
+  `src/i18n/messages/en.json` (and the other locales), then render
+  `t('key', { param })` from `useTranslations('namespace')` — never hardcode
+  display strings. Demo keys live under the `auction` namespace so `init-project`
+  can prune them; typing comes from `typeof en`, so a missing key is a compile error.
 - Strict TypeScript is on (`strict`, `noUncheckedIndexedAccess`). Don't cast
   your way around it; model the type properly.
 - Expected API failures surface as `ORPCError`s carrying the backend's Problem

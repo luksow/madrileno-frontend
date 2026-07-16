@@ -1,18 +1,21 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslations } from 'use-intl'
 import { useAuth } from '@/features/auth/useAuth'
 import { Button, buttonVariants } from '@/components/ui/button'
+import { LanguageToggle } from '@/components/language-toggle'
 import { ThemeToggle } from '@/components/theme-toggle'
 
 export function Layout({ children }: { children: ReactNode }) {
   const { tokens, logout } = useAuth()
+  const t = useTranslations('nav')
   return (
     <>
       <a
         href="#main"
         className="sr-only rounded-md bg-primary px-3 py-2 text-primary-foreground focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50"
       >
-        Skip to content
+        {t('skipToContent')}
       </a>
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
@@ -24,14 +27,15 @@ export function Layout({ children }: { children: ReactNode }) {
               <>
                 <span className="text-sm text-muted-foreground">{tokens.email}</span>
                 <Button variant="ghost" size="sm" onClick={logout}>
-                  Log out
+                  {t('logOut')}
                 </Button>
               </>
             ) : (
               <Link to="/login" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
-                Log in
+                {t('logIn')}
               </Link>
             )}
+            <LanguageToggle />
             <ThemeToggle />
           </nav>
         </div>

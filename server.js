@@ -103,18 +103,23 @@ app.use('*all', async (req, res) => {
 
     /** @type {string} */
     let template
-    /** @type {import('./src/app/entry-server.tsx').render} */
-    let render
+    /** @type {typeof import('./src/app/entry-server.tsx')} */
+    let entry
     if (!isProduction) {
       template = await fs.readFile('./index.html', 'utf-8')
       template = await vite.transformIndexHtml(url, template)
-      render = (await vite.ssrLoadModule('/src/app/entry-server.tsx')).render
+      entry = await vite.ssrLoadModule('/src/app/entry-server.tsx')
     } else {
       template = templateHtml
-      render = (await import('./dist/server/entry-server.js')).render
+      entry = await import('./dist/server/entry-server.js')
     }
 
-    const { pipe, abort, dehydratedState } = await render(url, apiBaseUrl)
+    // Locale from cookie / Accept-Language; echo it back as a cookie so the client
+    // hydrates in the same language (no mismatch) and the choice persists.
+    const locale = entry.detectLocale(req.headers.cookie, req.headers['accept-language'])
+    res.cookie(entry.localeCookie, locale, { path: '/', sameSite: 'lax', maxAge: 31_536_000_000 })
+    template = template.replace('<html lang="en">', `<html lang="${locale}">`)
+    const { pipe, abort, dehydratedState } = await entry.render(url, apiBaseUrl, locale)
 
     // Per-request nonce authorizes the inline scripts under the CSP (prod only — Vite HMR needs
     // inline/eval in dev).

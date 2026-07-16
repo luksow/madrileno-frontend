@@ -1,5 +1,6 @@
 // The only module allowed to touch Date (ESLint bans it elsewhere): wire values in, Temporal out.
 import { Temporal } from 'temporal-polyfill'
+import { useLocale } from 'use-intl'
 import { useHydrated } from '@/api/hydration'
 
 export function toInstant(value: Date | string): Temporal.Instant {
@@ -19,12 +20,11 @@ export function formatInstant(value: Date | string, options?: FormatInstantOptio
     .toLocaleString(options?.locale, { dateStyle: 'medium', timeStyle: 'short' })
 }
 
-// The server can't know the visitor's timezone/locale, and the hydration
-// render must match the server markup — format as UTC/en-US until hydration,
-// then re-render in the visitor's ambient zone.
-const SSR_SAFE: FormatInstantOptions = { timeZone: 'UTC', locale: 'en-US' }
-
+// Language follows the app locale (server and client agree via the cookie, so
+// it's hydration-safe). The timezone is the one thing the server can't know, so
+// it stays UTC until hydration, then re-renders in the visitor's ambient zone.
 export function useInstantFormatter(): (value: Date | string) => string {
   const hydrated = useHydrated()
-  return (value) => formatInstant(value, hydrated ? undefined : SSR_SAFE)
+  const locale = useLocale()
+  return (value) => formatInstant(value, { timeZone: hydrated ? undefined : 'UTC', locale })
 }
