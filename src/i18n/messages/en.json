@@ -37,6 +37,11 @@
     "heading": "Something went wrong",
     "back": "Back to start"
   },
+  "pwa": {
+    "updateAvailable": "A new version is available.",
+    "reload": "Reload",
+    "offlineReady": "Ready to work offline."
+  },
   "auction": {
     "listPageTitle": "Auctions — madrileno",
     "listHeading": "Wine auctions",

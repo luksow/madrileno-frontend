@@ -6,11 +6,11 @@ export type Locale = (typeof locales)[number]
 export const defaultLocale: Locale = 'en'
 export const localeCookie = 'LOCALE'
 
-// Widen the leaf string literals so a translation with different text still
-// satisfies the shape — but a locale missing a key is a compile error.
-type Messages = {
-  [K in keyof typeof en]: (typeof en)[K] extends object ? Record<string, string> : string
-}
+// Recursively widen leaf string literals so a translation with different text
+// still satisfies the shape — but any locale missing a key, at any depth, is a
+// compile error.
+type WidenLeaves<T> = T extends string ? string : { [K in keyof T]: WidenLeaves<T[K]> }
+type Messages = WidenLeaves<typeof en>
 export const messagesByLocale = { en, es } satisfies Record<Locale, Messages>
 
 // Language names are shown in their own language, not translated.

@@ -115,8 +115,11 @@ app.use('*all', async (req, res) => {
     }
 
     // Locale from cookie / Accept-Language; echo it back as a cookie so the client
-    // hydrates in the same language (no mismatch) and the choice persists.
+    // hydrates in the same language (no mismatch) and the choice persists. The
+    // rendered language varies by both inputs — declare it so any shared cache
+    // keys per language instead of serving the wrong one.
     const locale = entry.detectLocale(req.headers.cookie, req.headers['accept-language'])
+    res.vary('Cookie').vary('Accept-Language')
     res.cookie(entry.localeCookie, locale, { path: '/', sameSite: 'lax', maxAge: 31_536_000_000 })
     template = template.replace('<html lang="en">', `<html lang="${locale}">`)
     const { pipe, abort, dehydratedState } = await entry.render(url, apiBaseUrl, locale)

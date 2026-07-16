@@ -22,7 +22,10 @@ export function LocaleProvider({
 
   return (
     <SetLocaleContext.Provider value={changeLocale}>
-      <IntlProvider locale={locale} messages={messagesByLocale[locale]}>
+      {/* Deliberate default: date/number formatting is custom (see api/datetime.ts),
+          but a fixed timeZone keeps use-intl's own formatters SSR-safe and silences
+          its ENVIRONMENT_FALLBACK warning. */}
+      <IntlProvider locale={locale} messages={messagesByLocale[locale]} timeZone="UTC">
         {children}
       </IntlProvider>
     </SetLocaleContext.Provider>

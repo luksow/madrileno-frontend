@@ -37,6 +37,11 @@
     "heading": "Algo salió mal",
     "back": "Volver al inicio"
   },
+  "pwa": {
+    "updateAvailable": "Hay una nueva versión disponible.",
+    "reload": "Recargar",
+    "offlineReady": "Lista para usar sin conexión."
+  },
   "auction": {
     "listPageTitle": "Subastas — madrileno",
     "listHeading": "Subastas de vino",
