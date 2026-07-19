@@ -6,6 +6,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { tokenStore } from '@/features/auth/tokenStore'
 import { App } from '@/app/App'
+import { LocaleProvider } from '@/i18n/LocaleProvider'
 import { server } from '../../mswServer'
 import {
   AUCTION_ID,
@@ -21,7 +22,9 @@ function renderApp(path: string) {
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={[path]}>
-        <App />
+        <LocaleProvider>
+          <App />
+        </LocaleProvider>
       </MemoryRouter>
     </QueryClientProvider>,
   )

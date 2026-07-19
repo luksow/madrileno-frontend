@@ -9,7 +9,8 @@ Stack: Vite + React 19 + TypeScript (strict) + TanStack Query + oRPC
 (`@orpc/openapi-client` + `@orpc/tanstack-query`) + zod + react-router +
 react-hook-form + Temporal.
 Tests: Vitest + Testing Library + MSW, plus a Playwright e2e smoke. UI is
-shadcn/ui (Tailwind v4) with a themeable token palette and dark mode.
+shadcn/ui (Tailwind v4) with a themeable token palette and dark mode, and
+externalized UI strings (English) via use-intl, ready for i18n.
 
 ## The contract loop (the whole point)
 
@@ -120,6 +121,34 @@ the SSR bundle skips the service worker (it's a client artifact).
 One follow-up if you go further: a **runtime-caching strategy** for the API if
 you want true offline _data_ (TanStack Query already caches in memory; choosing
 per-route Workbox strategies is the next step).
+
+## Internationalization (i18n-ready, English-only)
+
+UI text goes through [use-intl](https://next-intl.dev/docs/environments/core-library)
+— a typed message dictionary, no codegen. It **ships English only, to match the
+backend** (emails and other backend content are English); the machinery for
+_selecting_ a language is deliberately absent — see the note below.
+
+- **Messages** are plain JSON in `src/i18n/messages/en.json`, grouped by namespace.
+  Render them with `useTranslations('namespace')` → `t('key', { param })`. Types come
+  from `typeof en` (`src/i18n/use-intl.d.ts`), so a missing or misnamed key is a
+  **compile error**. Externalizing strings now keeps the eventual jump to multiple
+  languages mechanical.
+- **One provider, one locale**: `LocaleProvider` wraps the app with use-intl's
+  `IntlProvider` fixed to `en`. No language switcher, no cookie, no `Accept-Language`
+  negotiation — with one language there's nothing to negotiate — and `<html lang="en">`
+  is static. `init-project` prunes the demo's `auction` namespace.
+
+### Adding languages later
+
+When you do, **source the locale from the backend, not a browser cookie.** The
+moment the backend emits localized content (emails, notifications), the user's
+language becomes a user-record attribute the backend owns — so the frontend should
+read it from the auth/user payload and change it through an API call, with
+`Accept-Language` as a pre-login default at most. A frontend-only cookie would be
+split-brain (e.g. a Spanish UI but English emails). That's why the cookie /
+negotiation / switcher machinery is intentionally left out until the backend
+supports a per-user language.
 
 ## Observability (opt-in)
 

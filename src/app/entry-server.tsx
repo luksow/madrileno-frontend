@@ -2,6 +2,7 @@ import { dehydrate, QueryClientProvider, type DehydratedState } from '@tanstack/
 import { StrictMode } from 'react'
 import { renderToPipeableStream } from 'react-dom/server'
 import { StaticRouter } from 'react-router-dom'
+import { LocaleProvider } from '@/i18n/LocaleProvider'
 import { App } from './App'
 import { makeQueryClient } from './queryClient'
 import { ssrPrefetchers } from './ssrPrefetch'
@@ -23,7 +24,9 @@ export async function render(url: string, apiBaseUrl: string): Promise<RenderRes
       <StrictMode>
         <QueryClientProvider client={queryClient}>
           <StaticRouter location={url}>
-            <App />
+            <LocaleProvider>
+              <App />
+            </LocaleProvider>
           </StaticRouter>
         </QueryClientProvider>
       </StrictMode>,

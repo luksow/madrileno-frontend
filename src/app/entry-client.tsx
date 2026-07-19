@@ -3,6 +3,7 @@ import { StrictMode } from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { registerAuthTokenProvider } from '@/features/auth/tokenStore'
+import { LocaleProvider } from '@/i18n/LocaleProvider'
 import { initRum } from '@/observability/rum'
 import '../styles/tailwind.css'
 import { App } from './App'
@@ -25,7 +26,9 @@ const app = (
     <QueryClientProvider client={queryClient}>
       <HydrationBoundary state={window.__RQ_STATE__}>
         <BrowserRouter>
-          <App />
+          <LocaleProvider>
+            <App />
+          </LocaleProvider>
         </BrowserRouter>
       </HydrationBoundary>
     </QueryClientProvider>

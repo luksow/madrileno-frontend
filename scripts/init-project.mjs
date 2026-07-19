@@ -39,6 +39,20 @@ for (const file of walk('src')) {
   }
 }
 
+let prunedLocales = 0
+const messagesDir = path.join('src', 'i18n', 'messages')
+if (fs.existsSync(messagesDir)) {
+  for (const file of fs.readdirSync(messagesDir).filter((f) => f.endsWith('.json'))) {
+    const catalogPath = path.join(messagesDir, file)
+    const catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'))
+    if ('auction' in catalog) {
+      delete catalog.auction
+      fs.writeFileSync(catalogPath, JSON.stringify(catalog, null, 2) + '\n')
+      prunedLocales += 1
+    }
+  }
+}
+
 const routerPath = path.join('src', 'app', 'router.tsx')
 const router = fs.readFileSync(routerPath, 'utf-8')
 const anchorRe = /^.*frontend:home-anchor.*(?:\n|$)/m
@@ -66,6 +80,7 @@ if (name) {
 
 console.log(`Deleted demo feature: ${deletedDemo ? auctionsDir : '(already gone)'}`)
 console.log(`Stripped auction blocks from ${stripped} file(s)`)
+console.log(`Pruned the auction namespace from ${prunedLocales} locale catalog(s)`)
 if (name) console.log(`Renamed package to ${name}-frontend`)
 console.log()
 console.log('Next:')
