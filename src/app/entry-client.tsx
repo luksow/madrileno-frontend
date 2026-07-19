@@ -7,6 +7,7 @@ import { initRum } from '@/observability/rum'
 import '../styles/tailwind.css'
 import { App } from './App'
 import { makeQueryClient } from './queryClient'
+import { registerPwa } from './registerPwa'
 
 registerAuthTokenProvider()
 
@@ -42,3 +43,4 @@ if (root.children.length > 0) {
 }
 
 void initRum()
+registerPwa()

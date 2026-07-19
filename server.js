@@ -16,6 +16,8 @@ function contentSecurityPolicy(nonce) {
     "img-src 'self' data:",
     "font-src 'self'",
     "connect-src 'self'",
+    "worker-src 'self'",
+    "manifest-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",
     "frame-ancestors 'none'",

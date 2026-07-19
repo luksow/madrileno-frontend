@@ -88,6 +88,39 @@ Design notes:
   CORS and no `VITE_API_BASE_URL` are needed unless you deliberately serve
   the API from a different origin.
 
+## PWA (installable + offline shell)
+
+The app is an installable PWA via `vite-plugin-pwa` (Workbox). `pnpm run build`
+and `build:ssr` emit `sw.js` + `manifest.webmanifest` into the client output;
+the SSR bundle skips the service worker (it's a client artifact).
+
+- **Install**: a web manifest (`vite.config.ts` → `VitePWA.manifest`),
+  `display: standalone`, `theme-color`. Its `name`/`short_name` derive from
+  `package.json`, so `init-project` renaming the package re-brands the installed
+  app too — no separate manifest edit.
+- **Icons**: `@vite-pwa/assets-generator` rasterizes `public/pwa-icon.svg` into
+  the full PNG set at build time (`pwa-*.png`, `maskable-icon-512x512.png`,
+  `apple-touch-icon-180x180.png`, `favicon.ico`) and injects the head links —
+  so iOS home-screen/splash works, not just Chromium/Android. Icons are build
+  output (not committed); regenerate after editing the source SVG with
+  `pnpm run generate-pwa-assets`. (Needs `sharp`, allowed via
+  `pnpm.onlyBuiltDependencies`.)
+- **Offline**: Workbox precaches the built app shell (JS/CSS/HTML/fonts/icons)
+  and falls back to `/index.html` for navigations, so an installed app opens
+  offline and renders client-side from cache. **API responses are not cached**
+  (`/v1` and `/healthz` are denylisted) — offline data is a deliberate follow-up.
+- **Updates**: `registerType: 'prompt'` — a new build never activates behind the
+  user's back. `src/app/registerPwa.ts` surfaces it as a sonner toast with a
+  **Reload** action. The worker is registered from bundled app code, not an
+  injected inline script, so the production nonce CSP needs no script exception
+  (it only adds `worker-src`/`manifest-src 'self'`).
+- **Dev**: the service worker stays off in `pnpm run dev` / `dev:ssr` — no
+  stale-cache surprises against HMR; it ships only in a production build.
+
+One follow-up if you go further: a **runtime-caching strategy** for the API if
+you want true offline _data_ (TanStack Query already caches in memory; choosing
+per-route Workbox strategies is the next step).
+
 ## Observability (opt-in)
 
 OpenObserve RUM pairs with the backend's OpenObserve instance: set the
@@ -107,7 +140,8 @@ Deliberate tradeoffs — accept or change them before shipping:
 - **Content Security Policy** (production SSR): `script-src 'self' 'nonce-…'` — no
   `unsafe-inline` for scripts; the two inline scripts (pre-paint theme setter,
   dehydrated state) are authorized by a per-request nonce. Plus `object-src
-'none'`, `frame-ancestors 'none'`, `form-action 'self'`. Dev has no CSP (Vite
+'none'`, `frame-ancestors 'none'`, `form-action 'self'`, and `worker-src`/
+  `manifest-src 'self'` for the installable PWA. Dev has no CSP (Vite
   HMR needs inline/eval); a static SPA deploy must set CSP at the CDN with the
   theme script's hash; enabling RUM needs its host in `connect-src`.
 - **Other posture**: the dev login (`/v1/auth/dev`) is backend-gated by
@@ -158,4 +192,5 @@ typed client, routing, tests, SSR opt-in. After running the backend's own
 | `e2e` / `e2e:prod`                       | Playwright smoke vs the dev / built production SSR server (needs the live backend; not in CI) |
 | `smoke:docker`                           | build + run the SSR image, verify healthz, SSR HTML and the container healthcheck             |
 | `sync-contracts`                         | vendor the backend-generated contract                                                         |
+| `generate-pwa-assets`                    | rasterize `public/pwa-icon.svg` into the PWA icon PNGs (also runs in `build`)                 |
 | `init-project`                           | strip the demo for a fresh project                                                            |
