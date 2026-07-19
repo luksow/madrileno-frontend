@@ -1,9 +1,27 @@
+import { randomBytes } from 'node:crypto'
 import fs from 'node:fs/promises'
 import { Transform } from 'node:stream'
 import express from 'express'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const port = Number(process.env.PORT ?? 5173)
+
+// CSP for production HTML: inline scripts run only via the per-request nonce (no 'unsafe-inline').
+// If you enable OpenObserve RUM, add its host to `connect-src`.
+function contentSecurityPolicy(nonce) {
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}'`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data:",
+    "font-src 'self'",
+    "connect-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+  ].join('; ')
+}
 // Server-side prefetch target; the browser keeps using VITE_API_BASE_URL.
 const apiBaseUrl = process.env.API_BASE_URL ?? 'http://localhost:9000'
 const ABORT_DELAY = 10000
@@ -96,17 +114,25 @@ app.use('*all', async (req, res) => {
 
     const { pipe, abort, dehydratedState } = await render(url, apiBaseUrl)
 
+    // Per-request nonce authorizes the inline scripts under the CSP (prod only — Vite HMR needs
+    // inline/eval in dev).
+    const nonce = isProduction ? randomBytes(16).toString('base64') : ''
     res.status(200)
     res.set({
       'Content-Type': 'text/html',
       'X-Content-Type-Options': 'nosniff',
       'Referrer-Policy': 'strict-origin-when-cross-origin',
+      ...(isProduction ? { 'Content-Security-Policy': contentSecurityPolicy(nonce) } : {}),
     })
 
-    const [htmlStart, htmlEnd] = template.split('<!--app-html-->')
+    const nonced = (html) =>
+      isProduction ? html.replaceAll('<script', `<script nonce="${nonce}"`) : html
+    const [rawStart, rawEnd] = template.split('<!--app-html-->')
+    const htmlStart = nonced(rawStart)
+    const htmlEnd = nonced(rawEnd)
     // Escape `<` so state can't close the script tag and inject markup.
     const stateJson = JSON.stringify(dehydratedState).replace(/</g, '\\u003c')
-    const stateScript = `<script>window.__RQ_STATE__=${stateJson}</script>`
+    const stateScript = `<script${isProduction ? ` nonce="${nonce}"` : ''}>window.__RQ_STATE__=${stateJson}</script>`
 
     const transformStream = new Transform({
       transform(chunk, encoding, callback) {

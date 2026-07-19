@@ -6,6 +6,9 @@ import { z } from 'zod'
 import { client } from '@/api/orpc'
 import { problemFrom, type Problem } from '@/api/problem'
 import { tokenStore } from '@/features/auth/tokenStore'
+import { Button } from '@/components/ui/button'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
 
 const loginSchema = z.object({ email: z.string().email('Enter a valid email address') })
 type LoginForm = z.infer<typeof loginSchema>
@@ -37,31 +40,39 @@ export function LoginPage() {
   })
 
   return (
-    <section className="narrow">
+    <section className="mx-auto flex max-w-sm flex-col gap-6 py-12">
       <title>Log in — madrileno</title>
-      <h1>Log in</h1>
-      <p className="muted">
-        Dev login: any email works when the backend runs with <code>DEV_AUTH_ENABLED=true</code>.
-      </p>
-      <form onSubmit={(e) => void onSubmit(e)} noValidate>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          placeholder="you@example.com"
-          autoComplete="email"
-          {...register('email')}
-        />
-        {errors.email && <p className="error">{errors.email.message}</p>}
+      <header className="flex flex-col gap-2">
+        <h1 className="text-2xl font-semibold">Log in</h1>
+        <p className="text-sm text-muted-foreground">
+          Dev login: any email works when the backend runs with <code>DEV_AUTH_ENABLED=true</code>.
+        </p>
+      </header>
+
+      <form onSubmit={(e) => void onSubmit(e)} noValidate className="flex flex-col gap-4">
+        <Field data-invalid={errors.email !== undefined}>
+          <FieldLabel htmlFor="email">Email</FieldLabel>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            autoComplete="email"
+            aria-invalid={errors.email !== undefined}
+            {...register('email')}
+          />
+          {errors.email && <FieldError>{errors.email.message}</FieldError>}
+        </Field>
+
         {problem && (
-          <p className="error">
+          <p className="text-sm text-destructive" role="alert">
             {problem.title}
             {problem.detail != null ? ` — ${problem.detail}` : ''}
           </p>
         )}
-        <button type="submit" disabled={isSubmitting}>
+
+        <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Logging in…' : 'Log in'}
-        </button>
+        </Button>
       </form>
     </section>
   )

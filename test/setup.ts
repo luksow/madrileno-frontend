@@ -4,6 +4,20 @@ import { afterAll, afterEach, beforeAll } from 'vitest'
 import { tokenStore } from '@/features/auth/tokenStore'
 import { server } from './mswServer'
 
+// jsdom has no matchMedia; the theme (and sonner) read it.
+if (typeof window.matchMedia !== 'function') {
+  window.matchMedia = (query: string): MediaQueryList => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  })
+}
+
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' })
 })

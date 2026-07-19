@@ -1,5 +1,6 @@
 import js from '@eslint/js'
 import prettier from 'eslint-config-prettier'
+import jsxA11y from 'eslint-plugin-jsx-a11y'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import globals from 'globals'
@@ -15,6 +16,7 @@ export default tseslint.config(
       ...tseslint.configs.recommendedTypeChecked,
       reactHooks.configs.flat['recommended-latest'],
       reactRefresh.configs.vite,
+      jsxA11y.flatConfigs.recommended,
       prettier,
     ],
     languageOptions: {
@@ -43,6 +45,16 @@ export default tseslint.config(
   {
     files: ['src/api/datetime.ts'],
     rules: { 'no-restricted-globals': 'off' },
+  },
+
+  // Vendored shadcn/ui primitives — relax the two rules that false-positive on canonical registry
+  // code (variant-helper exports; the generic Label associates at the call site).
+  {
+    files: ['src/components/ui/**/*.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+      'jsx-a11y/label-has-associated-control': 'off',
+    },
   },
 
   {

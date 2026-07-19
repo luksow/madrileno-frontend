@@ -1,3 +1,4 @@
+import { Toaster } from '@/components/ui/sonner'
 import { ErrorBoundary } from './ErrorBoundary'
 import { Layout } from './Layout'
 import { AppRoutes } from './router'
@@ -8,6 +9,7 @@ export function App() {
       <Layout>
         <AppRoutes />
       </Layout>
+      <Toaster />
     </ErrorBoundary>
   )
 }
